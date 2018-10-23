@@ -1,23 +1,41 @@
-const uuid = require('uuid/v5');
+const uuid = require('uuid/v1');
+const database = require('./database');
 
 class API {
-    devices = {};
+  generateUid() {
+    return uuid();
+  }
 
-    generateUid() {
-        return uuid();
+  async registerDevice(pid, vid, sno, model) {
+    let dbDevice = await database.Device.findOne({ pid, vid, sno, model });
+
+    if (dbDevice) {
+      return dbDevice;
     }
 
-    registerDevice(uid, device) {
-        this.devices[uid] = {
-            device
-        };
+    const uid = this.generateUid();
+    const newDevice = new database.Device({ uid, pid, vid, sno, model });
 
-        return this.devices[uid];
+    newDevice.save();
+
+    return newDevice;
+  }
+
+  async getDeviceByVendorData(vid, pid, sno) {
+    const device = await database.Device.findOne({ vid, pid, sno });
+
+    if (!device) {
+      return null;
     }
 
-    unregisterDevice(uid) {
-        return delete this.devices[uid];
-    }
+    return device;
+  }
+
+  getAllDevices() {
+    return database.Device.find();
+  }
+
+  unregisterDevice(uid) {}
 }
 
 module.exports = API;

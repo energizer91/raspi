@@ -6,10 +6,13 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "config": "^2.0.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "mongoose": "^5.3.6",
     "morgan": "~1.9.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "ws": "^6.1.0"
   }
 }

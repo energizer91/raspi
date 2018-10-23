@@ -8,131 +8,143 @@ Any other smart device should inherit this class and override its methods.
  * @class
  */
 class SmartDevice {
-    name = ''; // device display name
-    instance = null; // device instance with all params
-    uid = null; // device unique identifier
-    gateway = null; // device network gateway
-    capabilities = []; // device capabilities
-    data = null; // all device returning data
+  constructor(uid, api, config) {
+    this.uid = uid;
+    this.api = api; // device low level api
+    this.config = config; // device config
+    this.name = ''; // device display name
+    this.connection = null; // device websocket connection
+    this.capabilities = []; // device capabilities
+    this.data = null; // all device returning data
+  }
 
-    constructor(config, api) {
-        this.api = api; // device low level api
-        this.config = config; // device config
+  load() {
+    this.deviceWillLoad();
+
+    if (!this.name) {
+      this.name = 'Smart device ' + this.uid;
     }
 
-    load() {
-        this.uid = this.api.generateUid();
+    this.deviceDidLoad(this.uid);
+  }
 
-        if (!this.name) {
-            this.name = 'Smart device ' + this.uid;
-        }
-
-        this.deviceWillLoad(this.uid);
-
-        this.instance = this.api.registerDevice(this.uid, this.capabilities);
-
-        this.deviceDidLoad(this.instance, this.uid);
+  sendMessage(data) {
+    if (!this.connection) {
+      throw new Error('Connection is not established');
     }
 
-    async connect() {
-        this.deviceWillConnect();
+    this.connection.send(JSON.stringify(data));
+  }
 
-        return this.api.connect(this.config)
-            .then(gateway => {
-                this.gateway = gateway;
+  connect(connection) {
+    this.deviceWillConnect(connection);
+    this.connection = connection;
 
-                this.deviceDidConnect(this.gateway);
-            });
+    this.connection.on('close', () => this.disconnect());
+    this.connection.on('error', () => this.disconnect());
+    this.connection.on('message', message => this.processMessage(message));
+
+    this.sendMessage({ type: 'success', uid: this.uid });
+
+    this.deviceDidConnect(this.connection);
+  }
+
+  ping() {
+    console.log('somebody\'s just pinged me');
+
+    return 'pong';
+  }
+
+  setData(data) {
+    this.deviceWillSetData(data);
+
+    const prevData = this.data;
+    this.data = data;
+    this.deviceDidSetData(prevData);
+  }
+
+  tick() {
+    console.log('tick');
+  }
+
+  async processMessage(data) {
+    const message = JSON.parse(data);
+    switch(message.type) {
+      case 'data':
+        console.log(this.uid, 'I\'ve just got some data from device', message.data);
+        this.setData(message.data);
+        break;
+      default:
+        console.log('unhandled message', message);
     }
+  }
 
-    ping() {
-        console.log('somebody\'s just pinged me');
+  disconnect() {
+    this.deviceWillDisconnect();
+    this.connection.close();
+    this.connection = null;
+    this.deviceDidDisconnect();
+  }
 
-        return 'pong';
-    }
+  unload() {
+    this.deviceWillUnload();
 
-    setData(data) {
-        this.deviceWillSetData(data);
+    this.api.unregisterDevice(this.uid);
+    this.instance = null;
+    this.uid = null;
 
-        const prevData = this.data;
-        this.data = data;
-        this.deviceDidSetData(prevData);
-    }
+    this.deviceDidUnload();
+  }
 
-    tick() {
-        console.log('tick');
-    }
+  // load methods
+  deviceWillLoad() {
+    console.log(this.uid, 'i will load soon');
+  }
 
-    async unload() {
-        this.deviceWillDisconnect();
+  deviceDidLoad(uid) {
+    console.log(this.uid, 'I just been loaded with instance', uid);
+  }
 
-        return this.api.disconnect()
-            .then(() => {
-                this.gateway = null;
+  // methods of connecting to devices network
+  deviceWillConnect() {
+    console.log(this.uid, 'I will connect to network soon');
+  }
 
-                this.deviceDidDisconnect();
-            });
-    }
+  deviceDidConnect(connection) {
+    console.log(this.uid, 'I just been connected to the network with gateway', connection);
+  }
 
-    unload() {
-        this.deviceWillUnload();
+  // methods of setting data
+  deviceWillSetData(nextData) {
+    console.log(this.uid, 'I\'m planning to change some data', nextData);
+  }
 
-        this.api.unregisterDevice(this.uid);
-        this.instance = null;
-        this.uid = null;
+  deviceDidSetData(prevData) {
+    console.log(this.uid, 'I just changed some data', prevData, this.data);
+  }
 
-        this.deviceDidUnload();
-    }
+  // disconnect methods
+  deviceWillDisconnect() {
+    console.log(this.uid, 'I will disconnect from the network soon');
+  }
 
-    // load methods
-    deviceWillLoad() {
-        console.log('i will load soon');
-    }
+  deviceDidDisconnect() {
+    console.log(this.uid, 'I just been disconnected from the network');
+  }
 
-    deviceDidLoad(instance, uid) {
-        console.log('I just been loaded with instance', instance, uid);
-    }
+  // unload methods
+  deviceWillUnload() {
+    console.log(this.uid, 'i will unload soon');
+  }
 
-    // methods of connecting to devices network
-    deviceWillConnect() {
-        console.log('I will connect to network soon');
-    }
+  deviceDidUnload() {
+    console.log(this.uid, 'I just been unloaded');
+  }
 
-    deviceDidConnect(gateway) {
-        console.log('I just been connected to the network with gateway', gateway);
-    }
-
-    // methods of setting data
-    deviceWillSetData(nextData) {
-        console.log('I\'m planning to change some data', nextData);
-    }
-
-    deviceDidSetData(prevData) {
-        console.log('I just changed some data', prevData, this.data);
-    }
-
-    // disconnect methods
-    deviceWillDisconnect() {
-        console.log('I will disconnect from the network soon');
-    }
-
-    deviceDidDisconnect() {
-        console.log('I just been disconnected from the network');
-    }
-
-    // unload methods
-    deviceWillUnload() {
-        console.log('i will unload soon');
-    }
-
-    deviceDidUnload() {
-        console.log('I just been unloaded');
-    }
-
-    // events
-    onGetData() {
-        return this.data;
-    }
+  // events
+  getData() {
+    this.sendMessage({ type: 'data' });
+  }
 }
 
 module.exports = SmartDevice;
