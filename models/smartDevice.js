@@ -3,17 +3,22 @@ Smart device base class/model. Should be able to get main api in constructor, sh
 Any other smart device should inherit this class and override its methods.
  */
 
+const uuidv1 = require('uuid/v1');
+const config = require('config');
+const messageQueue = require('../helpers/messageQueue');
+
 /**
  * Smart device base class
  * @class
  */
 class SmartDevice {
-  constructor(uid, api, config) {
+  constructor(uid, api) {
     this.uid = uid;
     this.api = api; // device low level api
-    this.config = config; // device config
-    this.name = ''; // device display name
+    this.name = 'Smart device ' + this.uid; // device display name
     this.connection = null; // device websocket connection
+    this.registered = false;
+    this.connected = false;
     this.capabilities = []; // device capabilities
     this.data = null; // all device returning data
   }
@@ -21,11 +26,9 @@ class SmartDevice {
   load() {
     this.deviceWillLoad();
 
-    if (!this.name) {
-      this.name = 'Smart device ' + this.uid;
-    }
+    this.registered = true;
 
-    this.deviceDidLoad(this.uid);
+    this.deviceDidLoad();
   }
 
   sendMessage(data) {
@@ -36,43 +39,53 @@ class SmartDevice {
     this.connection.send(JSON.stringify(data));
   }
 
+  receiveMessage(message) {
+    const { uuid, data } = message;
+
+    if (messageQueue.hasQueue(uuid)) {
+      messageQueue.resolveMessage(uuid, data);
+    }
+
+    this.setData(data);
+  }
+
   connect(connection) {
     this.deviceWillConnect(connection);
     this.connection = connection;
+    this.connected = true;
 
     this.connection.on('close', () => this.disconnect());
     this.connection.on('error', () => this.disconnect());
     this.connection.on('message', message => this.processMessage(message));
 
-    this.sendMessage({ type: 'success', uid: this.uid });
-
     this.deviceDidConnect(this.connection);
-  }
-
-  ping() {
-    console.log('somebody\'s just pinged me');
-
-    return 'pong';
   }
 
   setData(data) {
     this.deviceWillSetData(data);
 
     const prevData = this.data;
-    this.data = data;
+    if (typeof data === 'object') {
+      this.data = Object.assign({}, this.data, data);
+    } else {
+      this.data = data;
+    }
+
+    this.sendData(data);
+
     this.deviceDidSetData(prevData);
   }
 
-  tick() {
-    console.log('tick');
-  }
-
-  async processMessage(data) {
+  processMessage(data) {
     const message = JSON.parse(data);
+
     switch(message.type) {
       case 'data':
-        console.log(this.uid, 'I\'ve just got some data from device', message.data);
-        this.setData(message.data);
+        console.log(this.uid, this.name, '-> I\'ve just got some data from device', message.data);
+        this.receiveMessage(message);
+        break;
+      case 'signal':
+        this.onGetSignal(message.signal);
         break;
       default:
         console.log('unhandled message', message);
@@ -81,69 +94,99 @@ class SmartDevice {
 
   disconnect() {
     this.deviceWillDisconnect();
+
     this.connection.close();
     this.connection = null;
+    this.connected = false;
+
     this.deviceDidDisconnect();
   }
 
   unload() {
     this.deviceWillUnload();
 
-    this.api.unregisterDevice(this.uid);
-    this.instance = null;
-    this.uid = null;
+    this.registered = false;
 
     this.deviceDidUnload();
   }
 
   // load methods
   deviceWillLoad() {
-    console.log(this.uid, 'i will load soon');
+    console.log(this.uid, this.name, '-> I will load soon');
   }
 
-  deviceDidLoad(uid) {
-    console.log(this.uid, 'I just been loaded with instance', uid);
+  deviceDidLoad() {
+    console.log(this.uid, this.name, '-> I just been loaded');
   }
 
   // methods of connecting to devices network
   deviceWillConnect() {
-    console.log(this.uid, 'I will connect to network soon');
+    console.log(this.uid, this.name, '-> I will connect to network soon');
   }
 
-  deviceDidConnect(connection) {
-    console.log(this.uid, 'I just been connected to the network with gateway', connection);
+  deviceDidConnect() {
+    console.log(this.uid, this.name, '-> I just been connected to the network');
   }
 
   // methods of setting data
   deviceWillSetData(nextData) {
-    console.log(this.uid, 'I\'m planning to change some data', nextData);
+    console.log(this.uid, this.name, '-> I\'m planning to change some data', nextData);
   }
 
   deviceDidSetData(prevData) {
-    console.log(this.uid, 'I just changed some data', prevData, this.data);
+    console.log(this.uid, this.name, '-> I just changed some data', prevData, this.data);
   }
 
   // disconnect methods
   deviceWillDisconnect() {
-    console.log(this.uid, 'I will disconnect from the network soon');
+    console.log(this.uid, this.name, '-> I will disconnect from the network soon');
   }
 
   deviceDidDisconnect() {
-    console.log(this.uid, 'I just been disconnected from the network');
+    console.log(this.uid, this.name, '-> I just been disconnected from the network');
   }
 
   // unload methods
   deviceWillUnload() {
-    console.log(this.uid, 'i will unload soon');
+    console.log(this.uid, this.name, '-> I will unload soon');
   }
 
   deviceDidUnload() {
-    console.log(this.uid, 'I just been unloaded');
+    console.log(this.uid, this.name, '-> I just been unloaded');
   }
 
-  // events
+  // get data directly from device
   getData() {
-    this.sendMessage({ type: 'data' });
+    const uuid = uuidv1();
+
+    this.sendMessage({ type: 'get', uuid });
+
+    return new Promise((resolve, reject) => {
+      messageQueue.addMessage(uuid, (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+
+        return resolve(result);
+      }, config.get('connection.timeout'));
+    });
+  }
+
+  // send data directly to device
+  sendData(data) {
+    console.log(this.uid, this.name, '-> I\'m sending data to device', data);
+    this.sendMessage({ type: 'send', data });
+  }
+
+  // get some specific information (called signals) from device
+  onGetSignal(signal) {
+    console.log(this.uid, this.name, '-> I just got signal', signal);
+  }
+
+  // send specific signal to device
+  sendSignal(signal) {
+    console.log(this.uid, this.name, '-> I\'m sending signal to device', signal);
+    this.sendMessage({ type: 'signal', signal });
   }
 }
 

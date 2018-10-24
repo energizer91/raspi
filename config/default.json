@@ -1,5 +1,6 @@
 {
   "connection": {
-    "port": 3076
+    "port": 8080,
+    "timeout": 10000
   }
 }

@@ -1,7 +1,14 @@
-const model = require('./model');
-const config = require('./config.json');
+const SmartDevice = require('../../models/smartDevice');
+const capabilities = require('../../helpers/capabilities');
 
-module.exports = {
-  model,
-  config
-};
+class DummyDevice extends SmartDevice {
+  constructor(uid, api, data) {
+    super(uid, api);
+
+    this.name = 'Smart bulb';
+    this.capabilities = [capabilities.DUMMY];
+    this.data = data;
+  }
+}
+
+module.exports = DummyDevice;

@@ -7,7 +7,23 @@ const records = [
     pid: '0001',
     sno: '00000001',
     model: 'dummy',
-    active: true
+    active: true,
+    data: {
+      enabled: false,
+      color: 'white',
+      brightness: 70
+    }
+  },
+  {
+    uid: '03cef9e0-d77d-11e8-a560-e79cff6a8292',
+    vid: '0001',
+    pid: '0002',
+    sno: '00000002',
+    model: 'dummySwitch',
+    active: true,
+    config: {
+      device: 'fb30ff90-d709-11e8-b74b-1d36bcbf2863'
+    }
   }
 ];
 

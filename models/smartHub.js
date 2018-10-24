@@ -1,6 +1,7 @@
 const API = require('./filebase');
 const WebSocket = require('ws');
 const devices = require('../devices');
+const config = require('config');
 
 class SmartHub {
   constructor() {
@@ -9,25 +10,14 @@ class SmartHub {
 
     this.registerDevices();
 
-    this.wss = new WebSocket.Server({ port: 8080 });
+    this.wss = new WebSocket.Server({port: config.get('connection.port')});
 
-    this.wss.on('connection', async (ws, req) => {
-      console.log('New websocket connection');
-      const { pid, vid, sno } = req.headers;
-      const device = await this.api.getDeviceByVendorData(vid, pid, sno);
+    this.wss.on('connection', (ws, req) => {
+      const {pid, vid, sno} = req.headers;
 
-      if (!device) {
-        ws.close();
-        throw new Error('No device found');
-      }
+      console.log('New websocket connection', pid, vid, sno);
 
-      const instance = this.getDeviceInstance(device.uid);
-
-      if (instance) {
-        if (!instance.connected) {
-          instance.device.connect(ws);
-        }
-      }
+      this.connectDevice(ws, {pid, vid, sno});
     });
   }
 
@@ -42,37 +32,52 @@ class SmartHub {
       throw new Error('Device model not found');
     }
 
-    const { model: Device, config } = devices[dbDevice.model];
-    const device = new Device(dbDevice.uid, this.api, config);
+    const Device = devices[dbDevice.model];
+    const device = new Device(dbDevice.uid, {
+      getDevice: uid => this.getDevice(uid)
+    }, dbDevice.data, dbDevice.config);
 
     device.load();
 
-    this.devices[dbDevice.uid] = {
-      device,
-      registered: true,
-      connected: false
-    };
+    this.devices[dbDevice.uid] = device;
 
     return this.devices[dbDevice.uid];
   }
 
   unregisterDevice(uid) {
-    const instance = this.getDeviceInstance(uid);
-    if (instance.connected) {
-      instance.device.disconnect();
+    const device = this.getDeviceInstance(uid);
+    if (device.connected) {
+      device.disconnect();
     }
 
-    if (instance.registered) {
-      instance.device.unload();
+    if (device.registered) {
+      device.unload();
     }
   }
 
-  isDeviceRegistered(uid) {
-    return this.devices[uid] && this.devices[uid].registered;
+  getRegisteredDevices() {
+    return this.devices;
   }
 
-  isDeviceConnected(uid) {
-    return this.devices[uid] && this.devices[uid].connected;
+  getDevice(uid) {
+    return this.devices[uid];
+  }
+
+  async connectDevice(connection, {vid, pid, sno}) {
+    const device = await this.api.getDeviceByVendorData(vid, pid, sno);
+
+    if (!device) {
+      connection.close();
+      throw new Error('No device found');
+    }
+
+    const instance = this.getDeviceInstance(device.uid);
+
+    if (instance) {
+      if (!instance.connected) {
+        instance.connect(connection);
+      }
+    }
   }
 
   getDeviceInstance(uid) {
