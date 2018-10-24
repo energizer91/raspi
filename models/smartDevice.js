@@ -95,7 +95,10 @@ class SmartDevice {
   disconnect() {
     this.deviceWillDisconnect();
 
-    this.connection.close();
+    if (this.connection) {
+      this.connection.close();
+    }
+
     this.connection = null;
     this.connected = false;
 

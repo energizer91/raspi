@@ -74,9 +74,11 @@ class SmartHub {
     const instance = this.getDeviceInstance(device.uid);
 
     if (instance) {
-      if (!instance.connected) {
-        instance.connect(connection);
+      if (instance.connected) {
+        instance.disconnect();
       }
+
+      instance.connect(connection);
     }
   }
 
