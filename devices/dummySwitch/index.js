@@ -33,17 +33,23 @@ class DummySwitch extends SmartDevice {
   }
 
   onGetSignal(signal) {
+    let bulb;
     switch(signal.key) {
       case 'color':
         console.log('Changing color to', signal.value);
         this.setBulbParameters(signal.key, signal.value);
         break;
       case 'enabled':
-        console.log('Changing enabled to', Boolean(signal.value));
-        this.setBulbParameters(signal.key, Boolean(signal.value));
+        bulb = this.getBulb();
+
+        const newEnabled = !bulb.data.enabled;
+
+        console.log('Changing enabled to', newEnabled);
+        this.setBulbParameters(signal.key, newEnabled);
         break;
       case 'brightness':
-        const bulb = this.getBulb();
+        bulb = this.getBulb();
+
         let bulbBrightness = bulb.data.brightness + Number(signal.value);
 
         if (bulbBrightness > 100) {
