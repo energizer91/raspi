@@ -57,6 +57,7 @@ class SmartDevice {
     this.connection.on('close', () => this.disconnect());
     this.connection.on('error', () => this.disconnect());
     this.connection.on('message', message => this.processMessage(message));
+    this.sendData(this.data);
 
     this.deviceDidConnect(this.connection);
   }

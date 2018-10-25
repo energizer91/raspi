@@ -33,7 +33,7 @@ router.post('/devices/:device/send', (req, res, next) => {
     return next(new Error('Device is not connected'));
   }
 
-  device.sendData(data);
+  device.setData(data);
 
   return res.send('ok');
 });

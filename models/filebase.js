@@ -44,8 +44,8 @@ const records = [
     model: 'smartRGB',
     active: true,
     data: {
-      enabled: false,
-      color: '#ffffff'
+      enabled: true,
+      color: '#FF0000'
     }
   }
 ];
