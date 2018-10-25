@@ -1,6 +1,6 @@
 const queue = {};
 
-function addMessage(uuid, callback, timeout = 10000) {
+function addMessage(uuid, callback, timeout = 20000) {
   const errorTimeout = setTimeout(() => rejectMessage(uuid, new Error('Operation timeout')), timeout);
 
   queue[uuid] = {

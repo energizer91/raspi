@@ -10,7 +10,6 @@ const records = [
     active: true,
     data: {
       enabled: false,
-      color: 'white',
       brightness: 70
     }
   },
@@ -35,6 +34,18 @@ const records = [
     data: {
       temperature: 0,
       humidity: 0
+    }
+  },
+  {
+    uid: 'e6237b70-d892-11e8-87ca-676fdf94a198',
+    vid: '0001',
+    pid: '0006',
+    sno: '00000006',
+    model: 'smartRGB',
+    active: true,
+    data: {
+      enabled: false,
+      color: '#ffffff'
     }
   }
 ];

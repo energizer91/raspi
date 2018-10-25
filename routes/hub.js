@@ -46,7 +46,8 @@ router.get('/devices/:device/data', (req, res, next) => {
   }
 
   return device.getData()
-    .then(response => res.json(response));
+    .then(response => res.json(response))
+    .catch(next);
 });
 
 router.get('/switch/signal/:signal', (req, res, next) => {
