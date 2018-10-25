@@ -24,6 +24,18 @@ const records = [
     config: {
       device: 'fb30ff90-d709-11e8-b74b-1d36bcbf2863'
     }
+  },
+  {
+    uid: '8bf61060-d881-11e8-a5c5-bf50ed08d44f',
+    vid: '0001',
+    pid: '0003',
+    sno: '00000003',
+    model: 'smartThermometer',
+    active: true,
+    data: {
+      temperature: 0,
+      humidity: 0
+    }
   }
 ];
 

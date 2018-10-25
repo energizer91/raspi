@@ -65,4 +65,8 @@ router.get('/switch/signal/:signal', (req, res, next) => {
   return res.send('ok');
 });
 
+router.get('/uid', (req, res, next) => {
+  res.send(smartHub.api.generateUid());
+});
+
 module.exports = router;
