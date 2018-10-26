@@ -5,6 +5,7 @@ class SmartThermometer extends SmartDevice {
   constructor(uid, api, data) {
     super(uid, api);
 
+    this.model = 'smartThermometer';
     this.name = 'Smart thermometer';
     this.capabilities = [capabilities.DUMMY];
     this.minValue = -40;

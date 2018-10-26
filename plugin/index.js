@@ -70,11 +70,15 @@ class SmartHubPlatform {
   }
 
   getTemperatureSensor(device) {
-    const temperatureSensor = new Service.TemperatureSensor(device.model + '_temperature_sensor');
+    const temperatureSensor = new Service.TemperatureSensor('Smart thermometer');
 
     temperatureSensor
       .getCharacteristic(Characteristic.CurrentTemperature)
       .on('get', callback => {
+        if (!device.connected) {
+          return callback(null, device.data.temperature);
+        }
+
         device.getData()
           .then(data => callback(null, data.temperature))
           .catch(err => callback(err));
@@ -92,11 +96,15 @@ class SmartHubPlatform {
   }
 
   getHumiditySensor(device) {
-    const humiditySensor = new Service.HumiditySensor(device.name + '_humidity_sensor');
+    const humiditySensor = new Service.HumiditySensor('Smart humidity meter');
 
     humiditySensor
       .getCharacteristic(Characteristic.CurrentRelativeHumidity)
       .on('get', callback => {
+        if (!device.connected) {
+          return callback(null, device.data.humidity);
+        }
+
         device.getData()
           .then(data => callback(null, data.humidity))
           .catch(err => callback(err));
