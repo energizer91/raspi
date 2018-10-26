@@ -1,7 +1,6 @@
 const API = require('./filebase');
 const WebSocket = require('ws');
 const devices = require('../devices');
-const config = require('config');
 
 class SmartHub {
   constructor() {
@@ -11,7 +10,7 @@ class SmartHub {
 
     // this.registerDevices();
 
-    this.wss = new WebSocket.Server({port: config.get('connection.port')});
+    this.wss = new WebSocket.Server({port: 8080});
 
     this.wss.on('connection', (ws, req) => {
       const {pid, vid, sno} = req.headers;

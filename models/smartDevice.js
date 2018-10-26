@@ -4,7 +4,6 @@ Any other smart device should inherit this class and override its methods.
  */
 
 const uuidv1 = require('uuid/v1');
-const config = require('config');
 const messageQueue = require('../helpers/messageQueue');
 
 /**
@@ -163,6 +162,10 @@ class SmartDevice {
   getData() {
     const uuid = uuidv1();
 
+    if (!this.connection) {
+      return this.data;
+    }
+
     this.sendMessage({ type: 'get', uuid });
 
     return new Promise((resolve, reject) => {
@@ -172,7 +175,7 @@ class SmartDevice {
         }
 
         return resolve(result);
-      }, config.get('connection.timeout'));
+      }, 10000);
     });
   }
 
