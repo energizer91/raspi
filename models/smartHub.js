@@ -7,8 +7,9 @@ class SmartHub {
   constructor() {
     this.api = new API();
     this.devices = {};
+    this.name = 'energizer91\'s Smart hub';
 
-    this.registerDevices();
+    // this.registerDevices();
 
     this.wss = new WebSocket.Server({port: config.get('connection.port')});
 
@@ -24,7 +25,7 @@ class SmartHub {
   async registerDevices() {
     const dbDevices = await this.api.getAllDevices();
 
-    dbDevices.forEach(dbDevice => this.registerDevice(dbDevice));
+    return dbDevices.map(dbDevice => this.registerDevice(dbDevice));
   }
 
   registerDevice(dbDevice) {

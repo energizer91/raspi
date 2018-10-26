@@ -7,6 +7,8 @@ class SmartThermometer extends SmartDevice {
 
     this.name = 'Smart thermometer';
     this.capabilities = [capabilities.DUMMY];
+    this.minValue = -40;
+    this.maxValue = 80;
     this.data = data;
   }
 }
