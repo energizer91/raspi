@@ -19,7 +19,7 @@ class SmartThermometer extends SmartDevice {
 
     this.thermometer
       .getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Manufacturer, this.smartHub.name)
+      .setCharacteristic(Characteristic.Manufacturer, this.smartHub.manufacturer)
       .setCharacteristic(Characteristic.Model, this.name)
       .setCharacteristic(Characteristic.SerialNumber, this.sno);
 

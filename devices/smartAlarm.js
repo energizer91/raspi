@@ -10,6 +10,11 @@ class SmartThermometer extends SmartDevice {
     this.name = 'Smart alarm';
     this.capabilities = [capabilities.DUMMY];
     this.data = data;
+    this.interval = setInterval(() => this.notifyChanges(), 5000);
+  }
+
+  deviceWillDisconnect() {
+    clearInterval(this.interval);
   }
 
   createAccessory(Accessory, Service, Characteristic) {
@@ -17,7 +22,7 @@ class SmartThermometer extends SmartDevice {
 
     this.alarm
       .getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Manufacturer, this.smartHub.name)
+      .setCharacteristic(Characteristic.Manufacturer, this.smartHub.manufacturer)
       .setCharacteristic(Characteristic.Model, this.name)
       .setCharacteristic(Characteristic.SerialNumber, this.sno);
 
@@ -43,6 +48,20 @@ class SmartThermometer extends SmartDevice {
           .then(data => callback(null, data.lightLevel))
           .catch(err => callback(err));
       });
+  }
+
+  notifyChanges() {
+    if (!this.lightSensor || !this.connected) {
+      return;
+    }
+
+    this.getData()
+      .then(data => {
+        sensor
+          .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
+          .updateValue(data.lightLevel);
+      })
+      .catch(error => console.error('Unable to update value', error));
   }
 
   attachServiceCharacteristics(accessory, Service, Characteristic) {
