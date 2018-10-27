@@ -1,5 +1,5 @@
-const SmartDevice = require('../../models/smartDevice');
-const capabilities = require('../../helpers/capabilities');
+const SmartDevice = require('../models/smartDevice');
+const capabilities = require('../helpers/capabilities');
 
 class DummySwitch extends SmartDevice {
   constructor(uid, api, data, config) {

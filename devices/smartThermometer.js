@@ -1,10 +1,11 @@
-const SmartDevice = require('../../models/smartDevice');
-const capabilities = require('../../helpers/capabilities');
+const SmartDevice = require('../models/smartDevice');
+const capabilities = require('../helpers/capabilities');
 
 class SmartThermometer extends SmartDevice {
-  constructor(uid, api, data) {
-    super(uid, api);
+  constructor(uid, smartHub, data, config, vid, pid, sno) {
+    super(uid, smartHub);
 
+    this.sno = sno;
     this.model = 'smartThermometer';
     this.name = 'Smart thermometer';
     this.capabilities = [capabilities.DUMMY];
@@ -16,7 +17,14 @@ class SmartThermometer extends SmartDevice {
   createAccessory(Accessory, Service, Characteristic) {
     this.thermometer = new Accessory(this.model, this.uid);
 
-    this.createServices(Service);
+    this.thermometer
+      .getService(Service.AccessoryInformation)
+      .setCharacteristic(Characteristic.Manufacturer, this.smartHub.name)
+      .setCharacteristic(Characteristic.Model, this.name)
+      .setCharacteristic(Characteristic.SerialNumber, this.sno);
+
+    this.temperatureSensor = new Service.TemperatureSensor('Temperature');
+    this.humiditySensor = new Service.HumiditySensor('Humidity');
 
     this.thermometer.addService(this.temperatureSensor);
     this.thermometer.addService(this.humiditySensor);
@@ -27,17 +35,10 @@ class SmartThermometer extends SmartDevice {
     return this.thermometer;
   }
 
-  createServices(Service) {
-    this.temperatureSensor = new Service.TemperatureSensor('Temperature');
-    this.humiditySensor = new Service.HumiditySensor('Humidity');
-  }
-
   attachTemperatureData(sensor, Characteristic) {
     if (!sensor) {
       return;
     }
-
-    console.log('Setting temperature characteristic');
 
     sensor
       .getCharacteristic(Characteristic.CurrentTemperature)
@@ -62,8 +63,6 @@ class SmartThermometer extends SmartDevice {
       return;
     }
 
-    console.log('Setting humidity characteristic');
-
     sensor
       .getCharacteristic(Characteristic.CurrentRelativeHumidity)
       .on('get', callback => {
@@ -79,12 +78,16 @@ class SmartThermometer extends SmartDevice {
       return;
     }
 
-    if (!this.temperatureSensor && !this.humiditySensor) {
-      this.createServices(Service);
+    if (!this.temperatureSensor) {
+      this.temperatureSensor = accessory.getService('Temperature');
     }
 
-    this.attachTemperatureData(accessory.getService('Temperature'), Characteristic);
-    this.attachHumidityData(accessory.getService('Humidity'), Characteristic);
+    if (!this.humiditySensor) {
+      this.humiditySensor = accessory.getService('Humidity');
+    }
+
+    this.attachTemperatureData(this.temperatureSensor, Characteristic);
+    this.attachHumidityData(this.humiditySensor, Characteristic);
   }
 }
 

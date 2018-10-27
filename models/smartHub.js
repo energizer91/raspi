@@ -10,6 +10,7 @@ class SmartHub extends EventEmitter {
     this.api = new API();
     this.devices = {};
     this.name = 'energizer91\'s Smart hub';
+    this.manufacturer = 'energizer91';
 
     this.registerDevices();
 
@@ -35,11 +36,13 @@ class SmartHub extends EventEmitter {
       throw new Error('Device model not found');
     }
 
+    const {vid, pid, sno} = dbDevice;
     const Device = devices[dbDevice.model];
     const device = new Device(dbDevice.uid, {
       getDevice: uid => this.getDevice(uid),
-      emit: (...args) => this.emit(...args)
-    }, dbDevice.data, dbDevice.config);
+      emit: (...args) => this.emit(...args),
+      manufacturer: this.manufacturer
+    }, dbDevice.data, dbDevice.config, vid, pid, sno);
 
     device.load();
 

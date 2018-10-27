@@ -47,6 +47,17 @@ const records = [
       enabled: true,
       color: '#FF0000'
     }
+  },
+  {
+    uid: 'fd51f870-d9f6-11e8-bff5-41cc63aa46da',
+    vid: '0001',
+    pid: '0007',
+    sno: '00000007',
+    model: 'smartAlarm',
+    active: true,
+    data: {
+      lightLevel: 0
+    }
   }
 ];
 
