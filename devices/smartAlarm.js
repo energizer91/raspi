@@ -70,7 +70,7 @@ class SmartThermometer extends SmartDevice {
     }
 
     if (!this.lightSensor) {
-      this.temperatureSensor = accessory.getService('Light');
+      this.lightSensor = accessory.getService('Light');
     }
     this.attachLightData(this.lightSensor, Characteristic);
   }
