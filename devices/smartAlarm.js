@@ -10,7 +10,14 @@ class SmartThermometer extends SmartDevice {
     this.name = 'Smart alarm';
     this.capabilities = [capabilities.DUMMY];
     this.data = data;
-    this.interval = setInterval(() => this.notifyChanges(), 5000);
+    this.interval = null;
+  }
+
+  deviceDidConnect() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+    this.interval = setInterval(() => this.notifyChanges(), 5000)
   }
 
   deviceWillDisconnect() {
