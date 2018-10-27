@@ -68,8 +68,6 @@ class SmartHubPlatform {
 
     const device = smartHub.getDevice(accessory.UUID);
 
-    console.log('Found device associated with this accessory', accessory.UUID, device);
-
     if (!device) {
       return;
     }

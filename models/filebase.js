@@ -70,7 +70,7 @@ class API {
     return newDevice;
   }
 
-  async getDeviceByVendorData(vid, pid, sno) {
+  getDeviceByVendorData(vid, pid, sno) {
     const device = records.find(record => record.vid === vid && record.vid === vid && record.sno === sno);;
 
     if (!device) {
