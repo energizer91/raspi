@@ -75,7 +75,7 @@ class SmartThermometer extends SmartDevice {
       return;
     }
 
-    if (!this.thermometer && !this.humiditySensor) {
+    if (!this.temperatureSensor && !this.humiditySensor) {
       this.createServices(Service);
     }
 

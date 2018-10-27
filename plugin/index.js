@@ -76,14 +76,21 @@ class SmartHubPlatform {
     accessory.reachable = device.connected;
 
     device.on('connected', () => {
-      this.log('I have been connected!');
+      this.log(accessory.displayName, 'I have been connected!');
 
       accessory.updateReachability(true);
+    });
+
+    device.on('disconnected', () => {
+      this.log(accessory.displayName, 'I have been disconnected!');
+
+      accessory.updateReachability(false);
     });
 
     device.attachServiceCharacteristics(accessory, Service, Characteristic);
 
     this.devices.push(accessory);
+    this.log(accessory.displayName, 'has been configured');
   }
 
   configurationRequestHandler(context, request, callback) {

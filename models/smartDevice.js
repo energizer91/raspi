@@ -107,6 +107,8 @@ class SmartDevice extends EventEmitter {
     this.connection = null;
     this.connected = false;
 
+    this.emit('disconnected');
+
     this.deviceDidDisconnect();
   }
 
