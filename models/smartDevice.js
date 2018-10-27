@@ -170,7 +170,7 @@ class SmartDevice extends EventEmitter {
     const uuid = uuidv1();
 
     if (!this.connection) {
-      return this.data;
+      return Promise.resolve(this.data);
     }
 
     this.sendMessage({ type: 'get', uuid });
