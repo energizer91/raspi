@@ -76,8 +76,10 @@ class SmartThermometer extends SmartDevice {
     }
 
     if (!this.thermometer && !this.humiditySensor) {
-      this.createServices(Service)
+      this.createServices(Service);
     }
+
+    console.log('Trying to attach service data', this.temperatureSensor, accessory.getService(this.temperatureSensor));
 
     this.attachTemperatureData(accessory.getService(this.temperatureSensor), Characteristic);
     this.attachHumidityData(accessory.getService(this.humiditySensor), Characteristic);

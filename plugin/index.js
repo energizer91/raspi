@@ -64,7 +64,7 @@ class SmartHubPlatform {
   }
 
   configureAccessory(accessory) {
-    this.log('configureAccessory is not implemented yet', accessory);
+    this.log('Configuring accessory', accessory);
 
     const device = smartHub.getDevice(accessory.UUID);
 
