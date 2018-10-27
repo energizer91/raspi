@@ -64,7 +64,7 @@ class SmartHubPlatform {
   }
 
   configureAccessory(accessory) {
-    this.log('Configuring accessory', accessory);
+    this.log('Configuring accessory', accessory.displayName);
 
     const device = smartHub.getDevice(accessory.UUID);
 
@@ -72,6 +72,7 @@ class SmartHubPlatform {
       return;
     }
 
+    this.log('Set reachability for', accessory.displayName, device.connected);
     accessory.reachable = device.connected;
 
     device.on('connected', () => {

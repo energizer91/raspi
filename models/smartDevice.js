@@ -61,7 +61,7 @@ class SmartDevice extends EventEmitter {
     this.connection.on('error', () => this.disconnect());
     this.connection.on('message', message => this.processMessage(message));
     this.sendData(this.data);
-    this.emit('connection');
+    this.emit('connected');
 
     this.deviceDidConnect(this.connection);
   }
