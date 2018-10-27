@@ -58,14 +58,14 @@ class SmartThermometer extends SmartDevice {
   }
 
   notifyChanges() {
-    if (!this.lightSensor || !this.connected) {
+    if (!this.lightSensor || !this.connected || !this.Characteristic) {
       return;
     }
 
     this.getData()
       .then(data => {
         this.lightSensor
-          .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
+          .getCharacteristic(this.Characteristic.CurrentAmbientLightLevel)
           .sendValue(data.lightLevel);
       })
       .catch(error => console.error('Unable to update value', error));
@@ -79,6 +79,7 @@ class SmartThermometer extends SmartDevice {
     if (!this.lightSensor) {
       this.lightSensor = accessory.getService('Light');
     }
+    this.Characteristic = Characteristic;
     this.attachLightData(this.lightSensor, Characteristic);
   }
 }
