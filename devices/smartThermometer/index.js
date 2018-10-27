@@ -83,8 +83,8 @@ class SmartThermometer extends SmartDevice {
       this.createServices(Service);
     }
 
-    this.attachTemperatureData(accessory.getService(this.temperatureSensor), Characteristic);
-    this.attachHumidityData(accessory.getService(this.humiditySensor), Characteristic);
+    this.attachTemperatureData(accessory.getService(Service.TemperatureSensor('Temperature')), Characteristic);
+    this.attachHumidityData(accessory.getService(Service.HumiditySensor('Humidity')), Characteristic);
   }
 }
 
