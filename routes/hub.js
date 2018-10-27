@@ -38,6 +38,18 @@ router.post('/devices/:device/send', (req, res, next) => {
   return res.send('ok');
 });
 
+router.post('/devices/:device/register', (req, res, next) => {
+  const device = smartHub.getDevice(req.params.device);
+
+  if (!device.connected) {
+    return next(new Error('Device is not connected'));
+  }
+
+  smartHub.emit('newDevice', device);
+
+  return res.send('ok');
+});
+
 router.get('/devices/:device/data', (req, res, next) => {
   const device = smartHub.getDevice(req.params.device);
 

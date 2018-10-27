@@ -29,6 +29,7 @@ class SmartHubPlatform {
     this.log = log;
     this.config = config;
     this.devices = [];
+    this.package = "homebridge-mysmarthub";
 
     if (api) {
       this.api = api;
@@ -44,68 +45,40 @@ class SmartHubPlatform {
   addDevice(device) {
     this.log('Adding device ' + device.name);
 
-    switch(device.model) {
-      case 'smartThermometer':
-        const temperatureSensor = this.getTemperatureSensor(device);
-        const humiditySensor = this.getHumiditySensor(device);
-        const uuid = UUIDGen.generate(device.uid);
-        const smartThermometer = new Accessory(device.model, uuid);
+    const accessory = device.createAccessory(Accessory, Service, Characteristic);
 
-        smartThermometer.addService(temperatureSensor);
-        smartThermometer.addService(humiditySensor);
-
-        smartThermometer.on('identify', (paired, callback) => device.identity().then(() => callback()));
-
-        this.devices.push(smartThermometer);
-        this.api.registerPlatformAccessories("homebridge-mysmarthub", smartHub.name, [smartThermometer]);
-        break;
-      default:
-        this.log('mne len bilo opisivat drugie ustroystva', device.name);
+    if (!accessory) {
+      return;
     }
+
+    this.devices.push(accessory);
+    this.registerAccessories([accessory]);
+  }
+
+  registerAccessories(accessories) {
+    this.api.registerPlatformAccessories(this.package, smartHub.name, accessories);
+  }
+
+  unregisterAccessories(accessories) {
+    this.api.registerPlatformAccessories(this.package, smartHub.name, accessories);
   }
 
   configureAccessory(accessory) {
     this.log('configureAccessory is not implemented yet', accessory);
 
+    const device = smartHub.getDevice(accessory.UUID);
+
+    accessory.reachable = device.connected;
+
+    device.on('connected', () => {
+      this.log('I have been connected!');
+
+      accessory.updateReachability(true);
+    });
+
+    device.attachServiceCharacteristics(accessory, Service, Characteristic);
+
     this.devices.push(accessory);
-  }
-
-  getTemperatureSensor(device) {
-    const temperatureSensor = new Service.TemperatureSensor('Thermometer');
-
-    temperatureSensor
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .on('get', callback => {
-        this.log('Getting temperature');
-        device.getData()
-          .then(data => callback(null, data.temperature))
-          .catch(err => callback(err));
-      });
-
-    temperatureSensor
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .setProps({ minValue: device.minValue });
-
-    temperatureSensor
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .setProps({ maxValue: device.maxValue });
-
-    return temperatureSensor;
-  }
-
-  getHumiditySensor(device) {
-    const humiditySensor = new Service.HumiditySensor('Humidity meter');
-
-    humiditySensor
-      .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-      .on('get', callback => {
-        this.log('Getting humidity');
-        device.getData()
-          .then(data => callback(null, data.humidity))
-          .catch(err => callback(err));
-      });
-
-    return humiditySensor;
   }
 
   configurationRequestHandler(context, request, callback) {
@@ -117,7 +90,7 @@ class SmartHubPlatform {
   // Sample function to show how developer can remove accessory dynamically from outside event
   removeAccessory() {
     this.log("Remove Accessory");
-    this.api.unregisterPlatformAccessories("homebridge-mysmarthub", smartHub.name, this.devices);
+    this.unregisterAccessories(this.devices);
 
     this.devices = [];
   }

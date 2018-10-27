@@ -206,6 +206,10 @@ class SmartDevice extends EventEmitter {
     console.log(this.uid, this.name, '-> I\'m sending signal to device', signal);
     this.sendMessage({ type: 'signal', signal });
   }
+
+  createAccessory(Accessory, Service, Characteristic) {
+    console.log(this.uid, this.name, '-> I\'m gonna connect to HomeKit!');
+  }
 }
 
 module.exports = SmartDevice;
