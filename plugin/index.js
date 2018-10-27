@@ -68,6 +68,10 @@ class SmartHubPlatform {
 
     const device = smartHub.getDevice(accessory.UUID);
 
+    if (!device) {
+      return;
+    }
+
     accessory.reachable = device.connected;
 
     device.on('connected', () => {
