@@ -73,6 +73,28 @@ class SmartThermometer extends SmartDevice {
       });
   }
 
+  notifyChanges(temperatureSensor, humiditySensor, Characteristic) {
+    if (!temperatureSensor || !humiditySensor || !this.connected) {
+      return;
+    }
+
+    this.getData()
+      .then(data => {
+        temperatureSensor
+          .getCharacteristic(Characteristic.CurrentTemperature)
+          .updateValue(data.temperature);
+
+        humiditySensor
+          .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+          .updateValue(data.humidity);
+      })
+      .catch(error => console.error('Unable to update value', error));
+  }
+
+  attachUpdates(temperatureSensor, humiditySensor, Characteristic) {
+    setInterval(() => this.notifyChanges(temperatureSensor, humiditySensor, Characteristic), 60000);
+  }
+
   attachServiceCharacteristics(accessory, Service, Characteristic) {
     if (!accessory) {
       return;
@@ -88,6 +110,7 @@ class SmartThermometer extends SmartDevice {
 
     this.attachTemperatureData(this.temperatureSensor, Characteristic);
     this.attachHumidityData(this.humiditySensor, Characteristic);
+    this.attachUpdates(this.temperatureSensor, this.humiditySensor, Characteristic);
   }
 }
 
