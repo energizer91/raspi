@@ -12,6 +12,14 @@ class SmartThermometer extends SmartDevice {
     this.maxValue = 80;
     this.data = data;
   }
+
+  attachServiceCharacteristics(service) {
+    if (!service) {
+      return;
+    }
+
+
+  }
 }
 
 module.exports = SmartThermometer;

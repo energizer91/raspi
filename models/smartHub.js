@@ -1,14 +1,17 @@
 const API = require('./filebase');
 const WebSocket = require('ws');
 const devices = require('../devices');
+const EventEmitter = require('events');
 
-class SmartHub {
+class SmartHub extends EventEmitter {
   constructor() {
+    super();
+
     this.api = new API();
     this.devices = {};
     this.name = 'energizer91\'s Smart hub';
 
-    // this.registerDevices();
+    this.registerDevices();
 
     this.wss = new WebSocket.Server({port: 8080});
 
@@ -18,7 +21,7 @@ class SmartHub {
       console.log('New websocket connection', pid, vid, sno);
 
       this.connectDevice(ws, {pid, vid, sno});
-    });
+    })
   }
 
   async registerDevices() {
@@ -34,7 +37,8 @@ class SmartHub {
 
     const Device = devices[dbDevice.model];
     const device = new Device(dbDevice.uid, {
-      getDevice: uid => this.getDevice(uid)
+      getDevice: uid => this.getDevice(uid),
+      emit: (...args) => this.emit(...args)
     }, dbDevice.data, dbDevice.config);
 
     device.load();

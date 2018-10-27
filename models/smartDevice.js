@@ -5,15 +5,18 @@ Any other smart device should inherit this class and override its methods.
 
 const uuidv1 = require('uuid/v1');
 const messageQueue = require('../helpers/messageQueue');
+const EventEmitter = require('events');
 
 /**
  * Smart device base class
  * @class
  */
-class SmartDevice {
-  constructor(uid, api) {
+class SmartDevice extends EventEmitter {
+  constructor(uid, smartHub) {
+    super();
+
     this.uid = uid;
-    this.api = api; // device low level api
+    this.smartHub = smartHub; // device low level api
     this.name = 'Smart device ' + this.uid; // device display name
     this.connection = null; // device websocket connection
     this.registered = false;
@@ -26,6 +29,7 @@ class SmartDevice {
     this.deviceWillLoad();
 
     this.registered = true;
+    this.emit('load');
 
     this.deviceDidLoad();
   }
@@ -57,6 +61,7 @@ class SmartDevice {
     this.connection.on('error', () => this.disconnect());
     this.connection.on('message', message => this.processMessage(message));
     this.sendData(this.data);
+    this.emit('connection');
 
     this.deviceDidConnect(this.connection);
   }
@@ -177,6 +182,12 @@ class SmartDevice {
         return resolve(result);
       }, 10000);
     });
+  }
+
+  identity(paired) {
+    console.log(this.uid, this.name, '-> Identity!', paired);
+
+    return Promise.resolve(true);
   }
 
   // send data directly to device

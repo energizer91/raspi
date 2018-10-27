@@ -36,7 +36,7 @@ class SmartHubPlatform {
       this.api.on('didFinishLaunching', () => {
         this.log('DidFinishLaunching');
 
-        smartHub.registerDevices().then(devices => devices.map(device => this.addDevice(device)));
+        smartHub.on('newDevice', device => this.addDevice(device));
       });
     }
   }
@@ -54,12 +54,7 @@ class SmartHubPlatform {
         smartThermometer.addService(temperatureSensor);
         smartThermometer.addService(humiditySensor);
 
-        smartThermometer.on('identify', (paired, callback) => {
-
-          this.log(smartThermometer.name, "Identify!!!", paired);
-
-          callback();
-        });
+        smartThermometer.on('identify', (paired, callback) => device.identity().then(() => callback()));
 
         this.devices.push(smartThermometer);
         this.api.registerPlatformAccessories("homebridge-mysmarthub", smartHub.name, [smartThermometer]);
@@ -67,6 +62,12 @@ class SmartHubPlatform {
       default:
         this.log('mne len bilo opisivat drugie ustroystva', device.name);
     }
+  }
+
+  configureAccessory(accessory) {
+    this.log('configureAccessory is not implemented yet', accessory);
+
+    this.devices.push(accessory);
   }
 
   getTemperatureSensor(device) {
@@ -111,10 +112,6 @@ class SmartHubPlatform {
     this.log('configurationRequestHandler', context, request);
 
     callback();
-  }
-
-  configureAccessory(accessory) {
-    this.log('configureAccessory is not implemented yet')
   }
 
   // Sample function to show how developer can remove accessory dynamically from outside event

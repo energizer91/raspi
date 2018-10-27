@@ -13,7 +13,7 @@ class DummySwitch extends SmartDevice {
 
   getBulb() {
     const bulbUid = this.config.device;
-    const bulb = this.api.getDevice(bulbUid);
+    const bulb = this.smartHub.getDevice(bulbUid);
 
     if (!bulb || !bulb.connected) {
       throw new Error('Bulb is not connected');
