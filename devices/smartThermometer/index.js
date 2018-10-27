@@ -37,6 +37,8 @@ class SmartThermometer extends SmartDevice {
       return;
     }
 
+    console.log('Setting temperature characteristic');
+
     sensor
       .getCharacteristic(Characteristic.CurrentTemperature)
       .on('get', callback => {
@@ -59,6 +61,8 @@ class SmartThermometer extends SmartDevice {
     if (!sensor) {
       return;
     }
+
+    console.log('Setting humidity characteristic');
 
     sensor
       .getCharacteristic(Characteristic.CurrentRelativeHumidity)
