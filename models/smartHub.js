@@ -24,8 +24,8 @@ class SmartHub extends EventEmitter {
     })
   }
 
-  async registerDevices() {
-    const dbDevices = await this.api.getAllDevices();
+  registerDevices() {
+    const dbDevices = this.api.getAllDevices();
 
     return dbDevices.map(dbDevice => this.registerDevice(dbDevice));
   }
@@ -67,8 +67,8 @@ class SmartHub extends EventEmitter {
     return this.devices[uid];
   }
 
-  async connectDevice(connection, {vid, pid, sno}) {
-    const device = await this.api.getDeviceByVendorData(vid, pid, sno);
+  connectDevice(connection, {vid, pid, sno}) {
+    const device = this.api.getDeviceByVendorData(vid, pid, sno);
 
     if (!device) {
       connection.close();
