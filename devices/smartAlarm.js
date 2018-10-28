@@ -41,7 +41,11 @@ class SmartThermometer extends SmartDevice {
       .on('get', callback => {
         console.log('Getting light level');
         this.getData()
-          .then(data => callback(null, data.lightLevel))
+          .then(data => {
+            this.dweetData(data);
+
+            callback(null, data.lightLevel);
+          })
           .catch(err => callback(err));
       });
   }

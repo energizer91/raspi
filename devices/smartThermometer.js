@@ -87,6 +87,8 @@ class SmartThermometer extends SmartDevice {
         humiditySensor
           .getCharacteristic(Characteristic.CurrentRelativeHumidity)
           .updateValue(data.humidity);
+
+        this.dweetData(data);
       })
       .catch(error => console.error('Unable to update value', error));
   }

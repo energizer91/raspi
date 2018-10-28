@@ -29,6 +29,10 @@ router.post('/devices/:device/send', (req, res, next) => {
   const device = smartHub.getDevice(req.params.device);
   const { data } = req.body;
 
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
+
   if (!device.connected) {
     return next(new Error('Device is not connected'));
   }
@@ -40,6 +44,10 @@ router.post('/devices/:device/send', (req, res, next) => {
 
 router.post('/devices/:device/register', (req, res, next) => {
   const device = smartHub.getDevice(req.params.device);
+
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
 
   if (!device.connected) {
     return next(new Error('Device is not connected'));
@@ -53,6 +61,10 @@ router.post('/devices/:device/register', (req, res, next) => {
 router.get('/devices/:device/data', (req, res, next) => {
   const device = smartHub.getDevice(req.params.device);
 
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
+
   if (!device.connected) {
     return next(new Error('Device is not connected'));
   }
@@ -62,8 +74,22 @@ router.get('/devices/:device/data', (req, res, next) => {
     .catch(next);
 });
 
+router.get('/devices/:device/dweet', (req, res, next) => {
+  const device = smartHub.getDevice(req.params.device);
+
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
+
+  return res.send(`https://dweet.io:443/follow/${device.uid}`);
+});
+
 router.get('/switch/signal/:signal', (req, res, next) => {
   const device = smartHub.getDevice('03cef9e0-d77d-11e8-a560-e79cff6a8292');
+
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
 
   if (['brightness', 'color', 'enabled'].indexOf(req.params.signal) < 0) {
     return next(new Error('Unknown signal'));

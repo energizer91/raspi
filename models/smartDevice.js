@@ -6,6 +6,7 @@ Any other smart device should inherit this class and override its methods.
 const uuidv1 = require('uuid/v1');
 const messageQueue = require('../helpers/messageQueue');
 const EventEmitter = require('events');
+const axios = require('axios');
 
 /**
  * Smart device base class
@@ -23,6 +24,7 @@ class SmartDevice extends EventEmitter {
     this.connected = false;
     this.capabilities = []; // device capabilities
     this.data = null; // all device returning data
+    this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`
   }
 
   load() {
@@ -79,6 +81,10 @@ class SmartDevice extends EventEmitter {
     this.sendData(data);
 
     this.deviceDidSetData(prevData);
+  }
+
+  dweetData(data) {
+    return axios.post(this.dweetUrl, data);
   }
 
   processMessage(data) {
