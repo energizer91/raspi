@@ -92,7 +92,7 @@ class SmartDevice extends EventEmitter {
 
     switch(message.type) {
       case 'data':
-        console.log(this.uid, this.name, '-> I\'ve just got some data from device', message.data);
+        // console.log(this.uid, this.name, '-> I\'ve just got some data from device', message.data);
         this.receiveMessage(message);
         break;
       case 'signal':
@@ -128,47 +128,47 @@ class SmartDevice extends EventEmitter {
 
   // load methods
   deviceWillLoad() {
-    console.log(this.uid, this.name, '-> I will load soon');
+    // console.log(this.uid, this.name, '-> I will load soon');
   }
 
   deviceDidLoad() {
-    console.log(this.uid, this.name, '-> I just been loaded');
+    // console.log(this.uid, this.name, '-> I just been loaded');
   }
 
   // methods of connecting to devices network
   deviceWillConnect() {
-    console.log(this.uid, this.name, '-> I will connect to network soon');
+    // console.log(this.uid, this.name, '-> I will connect to network soon');
   }
 
   deviceDidConnect() {
-    console.log(this.uid, this.name, '-> I just been connected to the network');
+    // console.log(this.uid, this.name, '-> I just been connected to the network');
   }
 
   // methods of setting data
   deviceWillSetData(nextData) {
-    console.log(this.uid, this.name, '-> I\'m planning to change some data', nextData);
+    // console.log(this.uid, this.name, '-> I\'m planning to change some data', nextData);
   }
 
   deviceDidSetData(prevData) {
-    console.log(this.uid, this.name, '-> I just changed some data', prevData, this.data);
+    // console.log(this.uid, this.name, '-> I just changed some data', prevData, this.data);
   }
 
   // disconnect methods
   deviceWillDisconnect() {
-    console.log(this.uid, this.name, '-> I will disconnect from the network soon');
+    // console.log(this.uid, this.name, '-> I will disconnect from the network soon');
   }
 
   deviceDidDisconnect() {
-    console.log(this.uid, this.name, '-> I just been disconnected from the network');
+    // console.log(this.uid, this.name, '-> I just been disconnected from the network');
   }
 
   // unload methods
   deviceWillUnload() {
-    console.log(this.uid, this.name, '-> I will unload soon');
+    // console.log(this.uid, this.name, '-> I will unload soon');
   }
 
   deviceDidUnload() {
-    console.log(this.uid, this.name, '-> I just been unloaded');
+    // console.log(this.uid, this.name, '-> I just been unloaded');
   }
 
   // get data directly from device
@@ -200,23 +200,23 @@ class SmartDevice extends EventEmitter {
 
   // send data directly to device
   sendData(data) {
-    console.log(this.uid, this.name, '-> I\'m sending data to device', data);
+    // console.log(this.uid, this.name, '-> I\'m sending data to device', data);
     this.sendMessage({ type: 'send', data });
   }
 
   // get some specific information (called signals) from device
   onGetSignal(signal) {
-    console.log(this.uid, this.name, '-> I just got signal', signal);
+    // console.log(this.uid, this.name, '-> I just got signal', signal);
   }
 
   // send specific signal to device
   sendSignal(signal) {
-    console.log(this.uid, this.name, '-> I\'m sending signal to device', signal);
+    // console.log(this.uid, this.name, '-> I\'m sending signal to device', signal);
     this.sendMessage({ type: 'signal', signal });
   }
 
   createAccessory(Accessory, Service, Characteristic) {
-    console.log(this.uid, this.name, '-> I\'m gonna connect to HomeKit!');
+    // console.log(this.uid, this.name, '-> I\'m gonna connect to HomeKit!');
   }
 }
 
