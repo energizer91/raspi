@@ -60,6 +60,8 @@ class SmartThermometer extends SmartDevice {
         sensor
           .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
           .updateValue(data.lightLevel);
+
+        this.dweetData(data);
       })
       .catch(error => console.error('Unable to update value', error));
   }
