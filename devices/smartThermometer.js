@@ -43,7 +43,7 @@ class SmartThermometer extends SmartDevice {
     sensor
       .getCharacteristic(Characteristic.CurrentTemperature)
       .on('get', callback => {
-        console.log('Getting temperature');
+        console.log(this.uid, this.name, '-> Getting temperature');
         this.getData()
           .then(data => callback(null, data.temperature))
           .catch(err => callback(err));
@@ -66,7 +66,7 @@ class SmartThermometer extends SmartDevice {
     sensor
       .getCharacteristic(Characteristic.CurrentRelativeHumidity)
       .on('get', callback => {
-        console.log('Getting humidity');
+        console.log(this.uid, this.name, '-> Getting humidity');
         this.getData()
           .then(data => callback(null, data.humidity))
           .catch(err => callback(err));
@@ -90,7 +90,7 @@ class SmartThermometer extends SmartDevice {
 
         this.dweetData(data);
       })
-      .catch(error => console.error('Unable to update value', error));
+      .catch(error => console.error(this.uid, this.name, '-> Unable to update value', error));
   }
 
   attachUpdates(temperatureSensor, humiditySensor, Characteristic) {

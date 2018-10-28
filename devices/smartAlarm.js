@@ -39,7 +39,7 @@ class SmartThermometer extends SmartDevice {
     sensor
       .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
       .on('get', callback => {
-        console.log('Getting light level');
+        console.log(this.uid, this.name, '-> Getting light level');
         this.getData()
           .then(data => {
             this.dweetData(data);
@@ -63,7 +63,7 @@ class SmartThermometer extends SmartDevice {
 
         this.dweetData(data);
       })
-      .catch(error => console.error('Unable to update value', error));
+      .catch(error => console.error(this.uid, this.name, '-> Unable to update value', error));
   }
 
   attachUpdate(sensor, Characteristic) {

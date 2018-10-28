@@ -19,8 +19,6 @@ class SmartHub extends EventEmitter {
     this.wss.on('connection', (ws, req) => {
       const {pid, vid, sno} = req.headers;
 
-      console.log('New websocket connection', pid, vid, sno);
-
       this.connectDevice(ws, {pid, vid, sno});
     })
   }

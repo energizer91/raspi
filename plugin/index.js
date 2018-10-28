@@ -76,13 +76,13 @@ class SmartHubPlatform {
     accessory.reachable = device.connected;
 
     device.on('connected', () => {
-      this.log(accessory.displayName, 'I have been connected!');
+      this.log(accessory.displayName, 'has been connected to network');
 
       accessory.updateReachability(true);
     });
 
     device.on('disconnected', () => {
-      this.log(accessory.displayName, 'I have been disconnected!');
+      this.log(accessory.displayName, 'has been disconnected to network');
 
       accessory.updateReachability(false);
     });
