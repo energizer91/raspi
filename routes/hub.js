@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { smartHub } = require('../models');
 
 router.get('/devices', function(req, res) {
-  const devices = smartHub.getRegisteredDevices();
+  const devices = req.smartHub.getRegisteredDevices();
 
   return res.json(Object.values(devices).map(device => ({
     uid: device.uid,
@@ -13,8 +12,12 @@ router.get('/devices', function(req, res) {
   })));
 });
 
-router.get('/devices/:device', (req, res) => {
-  const device = smartHub.getDevice(req.params.device);
+router.get('/devices/:device', (req, res, next) => {
+  const device = req.smartHub.getDeviceInstance(req.params.device);
+
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
 
   return res.json({
     uid: device.uid,
@@ -26,7 +29,7 @@ router.get('/devices/:device', (req, res) => {
 });
 
 router.post('/devices/:device/send', (req, res, next) => {
-  const device = smartHub.getDevice(req.params.device);
+  const device = req.smartHub.getDeviceInstance(req.params.device);
   const { data } = req.body;
 
   if (!device) {
@@ -43,7 +46,7 @@ router.post('/devices/:device/send', (req, res, next) => {
 });
 
 router.post('/devices/:device/register', (req, res, next) => {
-  const device = smartHub.getDevice(req.params.device);
+  const device = req.smartHub.getDeviceInstance(req.params.device);
 
   if (!device) {
     return next(new Error('Device not found'));
@@ -53,13 +56,25 @@ router.post('/devices/:device/register', (req, res, next) => {
     return next(new Error('Device is not connected'));
   }
 
-  smartHub.emit('newDevice', device);
+  req.smartHub.emit('newDevice', device);
+
+  return res.send('ok');
+});
+
+router.post('/devices/:device/unregister', (req, res, next) => {
+  const device = req.smartHub.getDeviceInstance(req.params.device);
+
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
+
+  req.smartHub.emit('removeDevice', device);
 
   return res.send('ok');
 });
 
 router.get('/devices/:device/data', (req, res, next) => {
-  const device = smartHub.getDevice(req.params.device);
+  const device = req.smartHub.getDeviceInstance(req.params.device);
 
   if (!device) {
     return next(new Error('Device not found'));
@@ -75,7 +90,7 @@ router.get('/devices/:device/data', (req, res, next) => {
 });
 
 router.get('/devices/:device/dweet', (req, res, next) => {
-  const device = smartHub.getDevice(req.params.device);
+  const device = req.smartHub.getDeviceInstance(req.params.device);
 
   if (!device) {
     return next(new Error('Device not found'));
@@ -84,8 +99,8 @@ router.get('/devices/:device/dweet', (req, res, next) => {
   return res.send(`https://dweet.io:443/follow/${device.uid}`);
 });
 
-router.get('/switch/signal/:signal', (req, res, next) => {
-  const device = smartHub.getDevice('03cef9e0-d77d-11e8-a560-e79cff6a8292');
+router.get('/device/:device/signal/:signal', (req, res, next) => {
+  const device = req.smartHub.getDeviceInstance(req.params.device);
 
   if (!device) {
     return next(new Error('Device not found'));
@@ -104,8 +119,8 @@ router.get('/switch/signal/:signal', (req, res, next) => {
   return res.send('ok');
 });
 
-router.get('/uid', (req, res, next) => {
-  res.send(smartHub.api.generateUid());
+router.get('/uid', (req, res) => {
+  res.send(req.smartHub.api.generateUid());
 });
 
 module.exports = router;

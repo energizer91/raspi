@@ -13,18 +13,23 @@ const axios = require('axios');
  * @class
  */
 class SmartDevice extends EventEmitter {
-  constructor(uid, smartHub) {
+  constructor(uid, smartHub, sno) {
     super();
 
     this.uid = uid;
+    this.sno = sno;
     this.smartHub = smartHub; // device low level api
+    this.homebridge = smartHub.homebridge;
+    this.model = 'smartDevice';
     this.name = 'Smart device ' + this.uid; // device display name
     this.connection = null; // device websocket connection
     this.registered = false;
     this.connected = false;
-    this.capabilities = []; // device capabilities
+    this.accessory = null; // HomeKit accessory
+    this.services = [];
     this.data = null; // all device returning data
-    this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`
+    this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`;
+    this.updateInterval = null;
   }
 
   load() {
@@ -92,7 +97,6 @@ class SmartDevice extends EventEmitter {
 
     switch(message.type) {
       case 'data':
-        // console.log(this.uid, this.name, '-> I\'ve just got some data from device', message.data);
         this.receiveMessage(message);
         break;
       case 'signal':
@@ -192,15 +196,14 @@ class SmartDevice extends EventEmitter {
     });
   }
 
-  identity(paired) {
-    console.log(this.uid, this.name, '-> Identity!', paired);
+  identify(paired) {
+    console.log(this.uid, this.name, '-> Identify!', paired);
 
     return Promise.resolve(true);
   }
 
   // send data directly to device
   sendData(data) {
-    // console.log(this.uid, this.name, '-> I\'m sending data to device', data);
     this.sendMessage({ type: 'send', data });
   }
 
@@ -215,8 +218,108 @@ class SmartDevice extends EventEmitter {
     this.sendMessage({ type: 'signal', signal });
   }
 
-  createAccessory(Accessory, Service, Characteristic) {
-    // console.log(this.uid, this.name, '-> I\'m gonna connect to HomeKit!');
+  createAccessory() {
+    if (!this.homebridge) {
+      throw new Error('Homebridge is not defined');
+    }
+
+    this.accessory = new this.homebridge.platformAccessory(this.model, this.uid);
+
+    this.accessory
+      .getService(this.homebridge.hap.Service.AccessoryInformation)
+      .setCharacteristic(this.homebridge.hap.Characteristic.Manufacturer, this.smartHub.manufacturer)
+      .setCharacteristic(this.homebridge.hap.Characteristic.Model, this.name)
+      .setCharacteristic(this.homebridge.hap.Characteristic.SerialNumber, this.sno);
+
+    this.services.forEach(service => {
+      const ServiceConstructor = service.type;
+
+      const sensor = new ServiceConstructor(service.name);
+
+      this.accessory.addService(sensor);
+
+      this.attachSensorData(service);
+    });
+
+    return this.accessory;
+  }
+
+  attachServiceCharacteristics(accessory) {
+    if (!this.homebridge) {
+      throw new Error('Homebridge is not defined');
+    }
+
+    this.accessory = accessory;
+
+    this.attachSensorsData();
+  }
+
+  attachSensorsData() {
+    if (!this.services || !this.services.length) {
+      return;
+    }
+
+    this.services.forEach(service => this.attachSensorData(service));
+    this.enableUpdates();
+  }
+
+  attachSensorData(service) {
+    if (!service) {
+      return;
+    }
+
+    if (service.get) {
+      this.accessory.getService(service.name)
+        .getCharacteristic(service.characteristic)
+        .on('get', callback => this.getData()
+          .then(data => callback(null, service.get(data)))
+          .catch(err => callback(err)));
+    }
+
+    if (service.set) {
+      this.accessory.getService(service.name)
+        .getCharacteristic(service.characteristic)
+        .on('set', (value, callback) => {
+          this.setData(service.set(value));
+          callback();
+        });
+    }
+
+    if (service.props) {
+      this.accessory.getService(service.name)
+        .getCharacteristic(service.characteristic)
+        .setProps(service.props);
+    }
+  }
+
+  notifyChanges() {
+    if (!this.connected) {
+      return;
+    }
+
+    this.getData()
+      .then(data => {
+        if (!this.services || !this.services.length || !this.accessory) {
+          return;
+        }
+
+        this.services.forEach(service => {
+          this.accessory.getService(service.name)
+            .getCharacteristic(service.characteristic)
+            .updateValue(service.value(data))
+        });
+
+        this.dweetData(data);
+      })
+      .catch(error => console.error(this.uid, this.name, '-> Unable to update value', error));
+  }
+
+  enableUpdates() {
+    this.updateInterval = setInterval(() => this.notifyChanges(), 60000);
+  }
+
+  disableUpdates() {
+    clearInterval(this.updateInterval);
   }
 }
 

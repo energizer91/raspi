@@ -1,118 +1,34 @@
 const SmartDevice = require('../models/smartDevice');
-const capabilities = require('../helpers/capabilities');
 
 class SmartThermometer extends SmartDevice {
-  constructor(uid, smartHub, data, config, vid, pid, sno) {
-    super(uid, smartHub);
+  constructor(uid, smartHub, data, config, sno) {
+    super(uid, smartHub, sno);
 
     this.sno = sno;
     this.model = 'smartThermometer';
     this.name = 'Smart thermometer';
-    this.capabilities = [capabilities.DUMMY];
-    this.minValue = -40;
-    this.maxValue = 80;
     this.data = data;
-  }
 
-  createAccessory(Accessory, Service, Characteristic) {
-    this.thermometer = new Accessory(this.model, this.uid);
-
-    this.thermometer
-      .getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Manufacturer, this.smartHub.manufacturer)
-      .setCharacteristic(Characteristic.Model, this.name)
-      .setCharacteristic(Characteristic.SerialNumber, this.sno);
-
-    this.temperatureSensor = new Service.TemperatureSensor('Temperature');
-    this.humiditySensor = new Service.HumiditySensor('Humidity');
-
-    this.thermometer.addService(this.temperatureSensor);
-    this.thermometer.addService(this.humiditySensor);
-
-    this.attachTemperatureData(this.temperatureSensor, Characteristic);
-    this.attachHumidityData(this.humiditySensor, Characteristic);
-
-    return this.thermometer;
-  }
-
-  attachTemperatureData(sensor, Characteristic) {
-    if (!sensor) {
-      return;
-    }
-
-    sensor
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .on('get', callback => {
-        console.log(this.uid, this.name, '-> Getting temperature');
-        this.getData()
-          .then(data => callback(null, data.temperature))
-          .catch(err => callback(err));
-      });
-
-    sensor
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .setProps({ minValue: this.minValue });
-
-    sensor
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .setProps({ maxValue: this.maxValue });
-  }
-
-  attachHumidityData(sensor, Characteristic) {
-    if (!sensor) {
-      return;
-    }
-
-    sensor
-      .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-      .on('get', callback => {
-        console.log(this.uid, this.name, '-> Getting humidity');
-        this.getData()
-          .then(data => callback(null, data.humidity))
-          .catch(err => callback(err));
-      });
-  }
-
-  notifyChanges(temperatureSensor, humiditySensor, Characteristic) {
-    if (!temperatureSensor || !humiditySensor || !this.connected) {
-      return;
-    }
-
-    this.getData()
-      .then(data => {
-        temperatureSensor
-          .getCharacteristic(Characteristic.CurrentTemperature)
-          .updateValue(data.temperature);
-
-        humiditySensor
-          .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-          .updateValue(data.humidity);
-
-        this.dweetData(data);
-      })
-      .catch(error => console.error(this.uid, this.name, '-> Unable to update value', error));
-  }
-
-  attachUpdates(temperatureSensor, humiditySensor, Characteristic) {
-    setInterval(() => this.notifyChanges(temperatureSensor, humiditySensor, Characteristic), 60000);
-  }
-
-  attachServiceCharacteristics(accessory, Service, Characteristic) {
-    if (!accessory) {
-      return;
-    }
-
-    if (!this.temperatureSensor) {
-      this.temperatureSensor = accessory.getService('Temperature');
-    }
-
-    if (!this.humiditySensor) {
-      this.humiditySensor = accessory.getService('Humidity');
-    }
-
-    this.attachTemperatureData(this.temperatureSensor, Characteristic);
-    this.attachHumidityData(this.humiditySensor, Characteristic);
-    this.attachUpdates(this.temperatureSensor, this.humiditySensor, Characteristic);
+    this.services = [
+      {
+        name: 'Temperature',
+        type: this.homebridge.hap.Service.TemperatureSensor,
+        characteristic: this.homebridge.hap.Characteristic.CurrentTemperature,
+        props: {
+          minValue: -40,
+          maxValue: 80
+        },
+        get: data => data.temperature,
+        set: value => ({ temperature: value })
+      },
+      {
+        name: 'Humidity',
+        type: this.homebridge.hap.Service.HumiditySensor,
+        characteristic: this.homebridge.hap.Characteristic.CurrentRelativeHumidity,
+        get: data => data.humidity,
+        set: value => ({ humidity: value })
+      }
+    ];
   }
 }
 

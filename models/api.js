@@ -21,6 +21,10 @@ class API {
     return newDevice;
   }
 
+  getDevice(uid) {
+    return database.Device.findOne({ uid });
+  }
+
   async getDeviceByVendorData(vid, pid, sno) {
     const device = await database.Device.findOne({ vid, pid, sno });
 
@@ -32,7 +36,7 @@ class API {
   }
 
   getAllDevices() {
-    return database.Device.find();
+    return database.Device.findAll();
   }
 
   unregisterDevice(uid) {}

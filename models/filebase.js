@@ -58,6 +58,21 @@ const records = [
     data: {
       lightLevel: 0
     }
+  },
+  {
+    uid: 'fd51f870-d9f6-11e8-bff5-41cc63aa46da', // change it!
+    vid: '0001',
+    pid: '0008',
+    sno: '00000008',
+    model: 'smartHumidifier',
+    active: true,
+    data: {
+      fanSpeed: 0,
+      enabled: false,
+      color: '#FFFFFF',
+      waterLevel: 0,
+      filterStatus: 1
+    }
   }
 ];
 
