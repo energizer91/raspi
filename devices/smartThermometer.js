@@ -13,20 +13,26 @@ class SmartThermometer extends SmartDevice {
       {
         name: 'Temperature',
         type: this.homebridge.hap.Service.TemperatureSensor,
-        characteristic: this.homebridge.hap.Characteristic.CurrentTemperature,
-        props: {
-          minValue: -40,
-          maxValue: 80
-        },
-        get: data => data.temperature,
-        set: value => ({ temperature: value })
+        characteristics: [
+          {
+            type: this.homebridge.hap.Characteristic.CurrentTemperature,
+            get: data => data.temperature,
+            props: {
+              minValue: -40,
+              maxValue: 80
+            }
+          }
+        ]
       },
       {
         name: 'Humidity',
         type: this.homebridge.hap.Service.HumiditySensor,
-        characteristic: this.homebridge.hap.Characteristic.CurrentRelativeHumidity,
-        get: data => data.humidity,
-        set: value => ({ humidity: value })
+        characteristics: [
+          {
+            type: this.homebridge.hap.Characteristic.CurrentRelativeHumidity,
+            get: data => data.temperature
+          }
+        ],
       }
     ];
   }

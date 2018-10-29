@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const app = require('../plugin')({registerPlatform: (...args) => console.log(...args)});
+const app = require('../app');
 const debug = require('debug')('raspi:server');
 const http = require('http');
 

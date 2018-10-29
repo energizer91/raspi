@@ -268,28 +268,34 @@ class SmartDevice extends EventEmitter {
       return;
     }
 
-    if (service.get) {
-      this.accessory.getService(service.name)
-        .getCharacteristic(service.characteristic)
-        .on('get', callback => this.getData()
-          .then(data => callback(null, service.get(data)))
-          .catch(err => callback(err)));
+    if (!service.chatacteristics) {
+      return null;
     }
 
-    if (service.set) {
-      this.accessory.getService(service.name)
-        .getCharacteristic(service.characteristic)
-        .on('set', (value, callback) => {
-          this.setData(service.set(value));
-          callback();
-        });
-    }
+    service.chatacteristics.forEach(characteristic => {
+      if (characteristic.get) {
+        this.accessory.getService(service.name)
+          .getCharacteristic(characteristic.type)
+          .on('get', callback => this.getData()
+            .then(data => callback(null, characteristic.get(data)))
+            .catch(err => callback(err)));
+      }
 
-    if (service.props) {
-      this.accessory.getService(service.name)
-        .getCharacteristic(service.characteristic)
-        .setProps(service.props);
-    }
+      if (characteristic.set) {
+        this.accessory.getService(service.name)
+          .getCharacteristic(characteristic.type)
+          .on('set', (value, callback) => {
+            this.setData(characteristic.set(value));
+            callback();
+          });
+      }
+
+      if (characteristic.props) {
+        this.accessory.getService(service.name)
+          .getCharacteristic(characteristic.type)
+          .setProps(characteristic.props);
+      }
+    })
   }
 
   notifyChanges() {
@@ -304,9 +310,11 @@ class SmartDevice extends EventEmitter {
         }
 
         this.services.forEach(service => {
-          this.accessory.getService(service.name)
-            .getCharacteristic(service.characteristic)
-            .updateValue(service.value(data))
+          service.characteristics.forEach(characteristic => {
+            this.accessory.getService(service.name)
+              .getCharacteristic(characteristic.type)
+              .updateValue(service.value(data))
+          })
         });
 
         this.dweetData(data);

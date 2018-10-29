@@ -2,13 +2,17 @@ import { SmartHub, HomeBridge } from './smartHub';
 import HAPNodeJS from './hap-nodejs';
 import Timeout = NodeJS.Timeout;
 
-export interface SmartDeviceService<D> {
+export type ServiceCharacteristic = {
+    type: HAPNodeJS.Characteristic,
+    props?: object,
+    get?: (data: any) => any,
+    set?: (value: any) => any
+}
+
+export interface SmartDeviceService {
     name: string,
     type: HAPNodeJS.Service,
-    characteristic: HAPNodeJS.Characteristic,
-    props?: object,
-    get?: (data: D) => any,
-    set?: (value: any) => D
+    characteristics: ServiceCharacteristic[],
 }
 
 export interface SmartDevice<D> {
@@ -21,7 +25,7 @@ export interface SmartDevice<D> {
     registered: boolean;
     connected: boolean;
     accessory: HAPNodeJS.Accessory; // HomeKit accessory
-    services: SmartDeviceService<D>[]; // list of HomeKit services
+    services: SmartDeviceService[]; // list of HomeKit services
     data: D; // all device returning data
     dweetUrl: string;
     updateInterval: Timeout;
@@ -54,7 +58,7 @@ export interface SmartDevice<D> {
     createAccessory(): HAPNodeJS.Accessory
     attachServiceCharacteristics(accessory: HAPNodeJS.Accessory): void;
     attachSensorsData(): void;
-    attachSensorData(service: SmartDeviceService<D>): void;
+    attachSensorData(service: SmartDeviceService): void;
     notifyChanges(): void;
     enableUpdates(): void;
     disableUpdates(): void;

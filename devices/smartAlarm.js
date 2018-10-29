@@ -12,9 +12,13 @@ class SmartThermometer extends SmartDevice {
     this.services = [
       {
         name: 'Light',
-        type: this.homebridge.Service.LightSensor,
-        characteristic: this.homebridge.Characteristic.CurrentAmbientLightLevel,
-        get: data => data.lightLevel
+        type: this.homebridge.hap.Service.LightSensor,
+        characteristics: [
+          {
+            type: this.homebridge.hap.Characteristic.CurrentAmbientLightLevel,
+            get: data => data.lightLevel
+          }
+        ],
       }
     ]
   }

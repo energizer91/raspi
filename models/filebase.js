@@ -60,7 +60,7 @@ const records = [
     }
   },
   {
-    uid: 'fd51f870-d9f6-11e8-bff5-41cc63aa46da', // change it!
+    uid: '8772f930-dbb6-11e8-bd39-2b0413a4144a', // change it!
     vid: '0001',
     pid: '0008',
     sno: '00000008',
@@ -69,7 +69,8 @@ const records = [
     data: {
       fanSpeed: 0,
       enabled: false,
-      color: '#FFFFFF',
+      hue: 0,
+      saturation: 0,
       waterLevel: 0,
       filterStatus: 1
     }
@@ -81,7 +82,7 @@ class API {
     return uuid();
   }
 
-  registerDevice(pid, vid, sno, model) {
+  async registerDevice(pid, vid, sno, model) {
     let dbDevice = records.find(record => record.pid === pid && record.vid === vid && record.sno === sno && record.model === model);
 
     if (dbDevice) {
@@ -96,8 +97,8 @@ class API {
     return newDevice;
   }
 
-  getDeviceByVendorData(vid, pid, sno) {
-    const device = records.find(record => record.vid === vid && record.vid === vid && record.sno === sno);;
+  async getDeviceByVendorData(vid, pid, sno) {
+    const device = records.find(record => record.vid === vid && record.vid === vid && record.sno === sno);
 
     if (!device) {
       return null;
@@ -106,7 +107,17 @@ class API {
     return device;
   }
 
-  getAllDevices() {
+  async getDevice(uid) {
+    const device = records.find(record => record.uid === uid);
+
+    if (!device) {
+      return null;
+    }
+
+    return device;
+  }
+
+  async getAllDevices() {
     return records;
   }
 
