@@ -43,7 +43,8 @@ class SmartDevice extends EventEmitter {
 
   sendMessage(data) {
     if (!this.connection) {
-      throw new Error('Connection is not established');
+      console.error('Connection is not established');
+      return;
     }
 
     this.connection.send(JSON.stringify(data));
