@@ -277,7 +277,10 @@ class SmartDevice extends EventEmitter {
         this.accessory.getService(service.name)
           .getCharacteristic(characteristic.type)
           .on('get', callback => this.getData()
-            .then(data => callback(null, characteristic.get(data)))
+            .then(data => {
+              console.log(this.uid, this.name, '-> Get', service.name, characteristic.get(data));
+              callback(null, characteristic.get(data))
+            })
             .catch(err => callback(err)));
       }
 
@@ -285,6 +288,7 @@ class SmartDevice extends EventEmitter {
         this.accessory.getService(service.name)
           .getCharacteristic(characteristic.type)
           .on('set', (value, callback) => {
+            console.log(this.uid, this.name, '-> Get', service.name, characteristic.set(value));
             this.setData(characteristic.set(value));
             callback();
           });
@@ -311,6 +315,7 @@ class SmartDevice extends EventEmitter {
 
         this.services.forEach(service => {
           service.characteristics.forEach(characteristic => {
+            console.log(this.uid, this.name, '-> Update', service.name, characteristic.get(data));
             this.accessory.getService(service.name)
               .getCharacteristic(characteristic.type)
               .updateValue(characteristic.get(data))
