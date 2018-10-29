@@ -71,6 +71,7 @@ const records = [
       enabled: false,
       hue: 0,
       saturation: 0,
+      value: 0,
       waterLevel: 0,
       filterStatus: 1
     }

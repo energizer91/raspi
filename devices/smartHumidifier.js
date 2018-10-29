@@ -49,6 +49,11 @@ class SmartHumidifier extends SmartDevice {
             type: this.homebridge.hap.Characteristic.Brightness,
             get: data => data.value,
             set: value => ({ value: value })
+          },
+          {
+            type: this.homebridge.hap.Characteristic.On,
+            get: data => data.enabled,
+            set: value => ({ enabled: value })
           }
         ]
       }
