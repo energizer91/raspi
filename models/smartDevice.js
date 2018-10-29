@@ -256,6 +256,7 @@ class SmartDevice extends EventEmitter {
 
   attachSensorsData() {
     if (!this.services || !this.services.length) {
+      console.log('No services found');
       return;
     }
 
@@ -268,11 +269,11 @@ class SmartDevice extends EventEmitter {
       return;
     }
 
-    if (!service.chatacteristics) {
+    if (!service.characteristics) {
       return null;
     }
 
-    service.chatacteristics.forEach(characteristic => {
+    service.characteristics.forEach(characteristic => {
       if (characteristic.get) {
         this.accessory.getService(service.name)
           .getCharacteristic(characteristic.type)
