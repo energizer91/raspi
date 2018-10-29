@@ -2,5 +2,22 @@
   "connection": {
     "port": 8080,
     "timeout": 10000
+  },
+  "database": {
+    "name": "raspi",
+    "username": "user",
+    "password": "",
+    "connection": {
+      "host": "localhost",
+      "dialect": "sqlite",
+      "operatorAliases": false,
+      "pool": {
+        "max": 5,
+        "min": 0,
+        "acquire": 30000,
+        "idle": 10000
+      },
+      "storage": "raspi.sqlite"
+    }
   }
 }

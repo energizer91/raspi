@@ -1,4 +1,4 @@
-const API = require('./filebase');
+const API = require('./api');
 const WebSocket = require('ws');
 const devices = require('../devices');
 const EventEmitter = require('events');
