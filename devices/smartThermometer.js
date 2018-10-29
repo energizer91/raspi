@@ -30,7 +30,7 @@ class SmartThermometer extends SmartDevice {
         characteristics: [
           {
             type: this.homebridge.hap.Characteristic.CurrentRelativeHumidity,
-            get: data => data.temperature
+            get: data => data.humidity
           }
         ],
       }
