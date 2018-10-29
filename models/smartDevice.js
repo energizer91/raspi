@@ -313,7 +313,7 @@ class SmartDevice extends EventEmitter {
           service.characteristics.forEach(characteristic => {
             this.accessory.getService(service.name)
               .getCharacteristic(characteristic.type)
-              .updateValue(service.value(data))
+              .updateValue(characteristic.get(data))
           })
         });
 
