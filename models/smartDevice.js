@@ -94,7 +94,7 @@ class SmartDevice extends EventEmitter {
     this.deviceDidConnect(this.connection);
   }
 
-  setData(data) {
+  setData(data, skipUpdate = false) {
     this.deviceWillSetData(data);
 
     const prevData = this.data;
@@ -105,7 +105,9 @@ class SmartDevice extends EventEmitter {
       this.data = data;
     }
 
-    this.sendData(data);
+    if (!skipUpdate) {
+      this.sendData(data);
+    }
 
     this.deviceDidSetData(prevData);
   }
@@ -221,7 +223,7 @@ class SmartDevice extends EventEmitter {
       .then(message => {
         const { data } = message;
 
-        this.setData(data);
+        this.setData(data, true);
 
         return data;
       })
@@ -321,7 +323,9 @@ class SmartDevice extends EventEmitter {
           .getCharacteristic(characteristic.type)
           .on('get', callback => this.getData()
             .then(data => {
+
               console.log(this.uid, this.name, '-> Get', service.name, characteristic.get(data));
+
               callback(null, characteristic.get(data))
             })
             .catch(err => callback(err)));
@@ -332,7 +336,9 @@ class SmartDevice extends EventEmitter {
           .getCharacteristic(characteristic.type)
           .on('set', (value, callback) => {
             console.log(this.uid, this.name, '-> Get', service.name, characteristic.set(value));
+
             this.setData(characteristic.set(value));
+
             callback();
           });
       }
@@ -360,6 +366,7 @@ class SmartDevice extends EventEmitter {
         this.services.forEach(service => {
           service.characteristics.forEach(characteristic => {
             console.log(this.uid, this.name, '-> Update', service.name, characteristic.get(data));
+
             this.accessory.getService(service.name)
               .getCharacteristic(characteristic.type)
               .updateValue(characteristic.get(data))
