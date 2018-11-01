@@ -32,7 +32,6 @@ class SmartHub extends EventEmitter {
       throw new Error('Device model not found');
     }
 
-    const {sno} = dbDevice;
     const Device = devices[dbDevice.model];
 
     const device = new Device(dbDevice.uid, {
@@ -40,7 +39,7 @@ class SmartHub extends EventEmitter {
       emit: (...args) => this.emit(...args),
       homebridge: this.homebridge,
       manufacturer: this.manufacturer
-    }, dbDevice.data, dbDevice.config, sno);
+    }, dbDevice);
 
     device.load();
 

@@ -5,7 +5,7 @@ const hubRouter = require('../routes/hub');
 
 let smartHub;
 
-const smartHubMiddleware = homebridge => (req, res, next) => {
+const smartHubMiddleware = (req, res, next) => {
   req.smartHub = smartHub;
 
   return next();
@@ -15,7 +15,7 @@ module.exports = function(homebridge) {
   // link homebridge to smarthub
   smartHub = new SmartHub(homebridge);
 
-  app.use(smartHubMiddleware(homebridge));
+  app.use(smartHubMiddleware);
   app.use('/hub', hubRouter);
 
   console.log("homebridge API version: " + homebridge.version);
@@ -23,7 +23,6 @@ module.exports = function(homebridge) {
   // For platform plugin to be considered as dynamic platform plugin,
   // registerPlatform(pluginName, platformName, constructor, dynamic), dynamic must be true
   homebridge.registerPlatform("homebridge-mysmarthub", smartHub.name, SmartHubPlatform, true);
-  return app;
 };
 
 // Platform constructor

@@ -1,19 +1,20 @@
 const SmartDevice = require('../models/smartDevice');
-const capabilities = require('../helpers/capabilities');
 
-class DummySwitch extends SmartDevice {
-  constructor(uid, api, data, config) {
-    super(uid, api);
+class SmartSwitch extends SmartDevice {
+  constructor(uid, smartHub, config) {
+    super(uid, smartHub, config);
 
+    this.name = 'smartSwitch';
     this.name = 'Smart switch';
-    this.capabilities = [capabilities.DUMMY];
-    this.config = config;
-    this.data = data;
+    this.config = config.config;
+    this.data = Object.assign({
+      device: ''
+    }, config.data);
   }
 
   getBulb() {
     const bulbUid = this.config.device;
-    const bulb = this.smartHub.getDevice(bulbUid);
+    const bulb = this.smartHub.getDeviceInstance(bulbUid);
 
     if (!bulb || !bulb.connected) {
       throw new Error('Bulb is not connected');
@@ -67,4 +68,4 @@ class DummySwitch extends SmartDevice {
   }
 }
 
-module.exports = DummySwitch;
+module.exports = SmartSwitch;

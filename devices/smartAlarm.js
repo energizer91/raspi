@@ -1,13 +1,14 @@
 const SmartDevice = require('../models/smartDevice');
 
 class SmartThermometer extends SmartDevice {
-  constructor(uid, api, data, config, sno) {
-    super(uid, api);
+  constructor(uid, smartHub, config) {
+    super(uid, smartHub, config);
 
-    this.sno = sno;
     this.model = 'smartAlarm';
     this.name = 'Smart alarm';
-    this.data = data;
+    this.data = Object.assign({
+      lightLevel: 0
+    }, config.data);
 
     this.services = [
       {

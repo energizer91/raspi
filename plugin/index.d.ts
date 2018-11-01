@@ -5,7 +5,7 @@ export type ConfigurationRequestHandler = (context: any, request: any, callback:
 export interface HomeBridgeAPI {
     version: string;
     registerAccessory(pluginName: string, platformName: string, constructor: HAPNodeJS.Accessory, configurationRequestHandler: ConfigurationRequestHandler)
-    registerPlatform(pluginName: string, platformName: string, constructor: SmartHubPlatform, dynamic: true): void;
+    registerPlatform(pluginName: string, platformName: string, constructor: SmartHubPlatform, dynamic: boolean): void;
     registerPlatformAccessories(pluginName: string, platformName: string, accessories: HAPNodeJS.Accessory[]): void;
     updatePlatformAccessories(accessories: HAPNodeJS.Accessory[]): void;
     unregisterPlatformAccessories(pluginName: string, platformName: string, accessories: HAPNodeJS.Accessory[]): void;

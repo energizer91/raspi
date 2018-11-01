@@ -6,7 +6,7 @@ const records = [
     vid: '0001',
     pid: '0001',
     sno: '00000001',
-    model: 'dummy',
+    model: 'smartBulb',
     active: true,
     data: {
       enabled: false,
@@ -18,7 +18,7 @@ const records = [
     vid: '0001',
     pid: '0002',
     sno: '00000002',
-    model: 'dummySwitch',
+    model: 'smartSwitch',
     active: true,
     config: {
       device: 'fb30ff90-d709-11e8-b74b-1d36bcbf2863'

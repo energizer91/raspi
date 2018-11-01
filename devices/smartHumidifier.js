@@ -1,23 +1,20 @@
 const SmartDevice = require('../models/smartDevice');
 
 class SmartHumidifier extends SmartDevice {
-  constructor(uid, smartHub, data, config, sno) {
-    super(uid, smartHub, sno);
+  constructor(uid, smartHub, config) {
+    super(uid, smartHub, config);
 
-    this.sno = sno;
     this.model = 'smartHumidifier';
     this.name = 'Smart humidifier';
-    this.data = data;
-
-    // this.data = {
-    //   hue: 0,
-    //   saturation: 0,
-    //   value: 0,
-    //   fanSpeed: 0,
-    //   changeFilter: 0,
-    //   lowWaterLevel: false,
-    //   doorOpen: false
-    // };
+    this.data = Object.assign({
+      hue: 0,
+      saturation: 0,
+      value: 0,
+      fanSpeed: 0,
+      changeFilter: 0,
+      lowWaterLevel: false,
+      doorOpen: false
+    }, config.data);
 
     this.services = [
       {

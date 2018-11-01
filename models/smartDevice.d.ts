@@ -15,6 +15,17 @@ export interface SmartDeviceService {
     characteristics: ServiceCharacteristic[],
 }
 
+type DeviceConfig = {
+    uid: string,
+    vid: string,
+    pid: string,
+    sno: string,
+    model: string,
+    active: boolean,
+    data?: object,
+    config?: object
+}
+
 export interface SmartDevice<D> {
     uid: string;
     smartHub: SmartHub;
@@ -29,8 +40,8 @@ export interface SmartDevice<D> {
     data: D; // all device returning data
     dweetUrl: string;
     updateInterval: Timeout;
-    constructor(uid: string, smartHub: SmartHub, sno: string): void;
-    constructor(uid: string, smartHub: SmartHub, data: D, config: object, sno: string): void;
+    pingInterval: Timeout;
+    constructor(uid: string, smartHub: SmartHub, config: DeviceConfig): void;
     load(): void;
     sendMessage(data: object): void;
     receiveMessage(message: object): void;

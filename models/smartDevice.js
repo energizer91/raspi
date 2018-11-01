@@ -13,23 +13,24 @@ const axios = require('axios');
  * @class
  */
 class SmartDevice extends EventEmitter {
-  constructor(uid, smartHub, sno) {
+  constructor(uid, smartHub, config) {
     super();
 
-    this.uid = uid;
-    this.sno = sno;
+    this.uid = uid; // unique identifier of device
+    this.sno = config.sno; // device serial number
     this.smartHub = smartHub; // device low level api
-    this.homebridge = smartHub.homebridge;
-    this.model = 'smartDevice';
+    this.homebridge = smartHub.homebridge; // homebridge instance
+    this.model = 'smartDevice'; // device model for HomeKit
     this.name = 'Smart device ' + this.uid; // device display name
     this.connection = null; // device websocket connection
-    this.registered = false;
-    this.connected = false;
+    this.registered = false; // chack if device is loaded
+    this.connected = false; // check if device is connected
     this.accessory = null; // HomeKit accessory
-    this.services = [];
+    this.services = []; // list of HomeKit services
     this.data = null; // all device returning data
-    this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`;
-    this.updateInterval = null;
+    this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
+    this.updateInterval = null; // interval for updating data every minute
+    this.pingInterval = null; // interval for pinging device and disconnecting if something's wrong
   }
 
   load() {
@@ -50,14 +51,32 @@ class SmartDevice extends EventEmitter {
     this.connection.send(JSON.stringify(data));
   }
 
-  receiveMessage(message) {
-    const { uuid, data } = message;
+  sendMessageWithResponse(message, delay = 10000) {
+    const uuid = uuidv1();
 
-    if (messageQueue.hasQueue(uuid)) {
-      messageQueue.resolveMessage(uuid, data);
+    if (!this.connection) {
+      return Promise.reject(new Error('Connection is not established'));
     }
 
-    this.setData(data);
+    this.sendMessage({ ...message, uuid });
+
+    return new Promise((resolve, reject) => {
+      messageQueue.addMessage(uuid, (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+
+        return resolve(result);
+      }, delay);
+    });
+  }
+
+  receiveMessage(message) {
+    const { uuid, ...other } = message;
+
+    if (messageQueue.hasQueue(uuid)) {
+      messageQueue.resolveMessage(uuid, other);
+    }
   }
 
   connect(connection) {
@@ -70,6 +89,7 @@ class SmartDevice extends EventEmitter {
     this.connection.on('message', message => this.processMessage(message));
     this.sendData(this.data);
     this.emit('connected');
+    this.pingInterval = setInterval(() => this.ping(), 60000);
 
     this.deviceDidConnect(this.connection);
   }
@@ -96,20 +116,23 @@ class SmartDevice extends EventEmitter {
   processMessage(data) {
     const message = JSON.parse(data);
 
+    if (message.uuid) {
+      return this.receiveMessage(message);
+    }
+
     switch(message.type) {
-      case 'data':
-        this.receiveMessage(message);
-        break;
       case 'signal':
         this.onGetSignal(message.signal);
         break;
       default:
-        console.log('unhandled message', message);
+        console.log(this.uid, this.name, '-> Unhandled message', message);
     }
   }
 
   disconnect() {
     this.deviceWillDisconnect();
+
+    clearInterval(this.pingInterval);
 
     if (this.connection) {
       this.connection.close();
@@ -176,27 +199,33 @@ class SmartDevice extends EventEmitter {
     // console.log(this.uid, this.name, '-> I just been unloaded');
   }
 
+  // ping device each minute
+  ping() {
+    this.sendMessageWithResponse({ type: 'ping' })
+      .catch(error => {
+        console.error(this.uid, this.name, '-> Sending ping error', error);
+        console.error(this.uid, this.name, '-> Device is not responding. Disconnecting...');
+
+        this.disconnect();
+      })
+  }
+
   // get data directly from device
   getData() {
-    const uuid = uuidv1();
-
     if (!this.connection) {
       return Promise.resolve(this.data);
     }
 
-    this.sendMessage({ type: 'get', uuid });
+    return this.sendMessageWithResponse({ type: 'get' })
+      .then(message => this.setData(message.data))
+      .catch(error => {
+        console.log('Sending message with response error', error);
 
-    return new Promise((resolve, reject) => {
-      messageQueue.addMessage(uuid, (error, result) => {
-        if (error) {
-          return reject(error);
-        }
-
-        return resolve(result);
-      }, 10000);
-    });
+        return this.data;
+      });
   }
 
+  // HomeKit devices identification
   identify(paired) {
     console.log(this.uid, this.name, '-> Identify!', paired);
 
@@ -219,6 +248,7 @@ class SmartDevice extends EventEmitter {
     this.sendMessage({ type: 'signal', signal });
   }
 
+  // create HomeKit accessory
   createAccessory() {
     if (!this.homebridge) {
       throw new Error('Homebridge is not defined');
@@ -245,6 +275,7 @@ class SmartDevice extends EventEmitter {
     return this.accessory;
   }
 
+  // attach HomeKit characteristics to accessory
   attachServiceCharacteristics(accessory) {
     if (!this.homebridge) {
       throw new Error('Homebridge is not defined');
@@ -255,9 +286,11 @@ class SmartDevice extends EventEmitter {
     this.attachSensorsData();
   }
 
+  // attach sensors data to accessories
   attachSensorsData() {
     if (!this.services || !this.services.length) {
-      console.log('No services found');
+      console.log(this.uid, this.name, '-> No services found');
+
       return;
     }
 
@@ -265,6 +298,7 @@ class SmartDevice extends EventEmitter {
     this.enableUpdates();
   }
 
+  // attach sensor data per each sensor
   attachSensorData(service) {
     if (!service) {
       return;
@@ -304,6 +338,7 @@ class SmartDevice extends EventEmitter {
     })
   }
 
+  // update devices info every minute
   notifyChanges() {
     if (!this.connected) {
       return;
