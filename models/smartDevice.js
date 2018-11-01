@@ -98,6 +98,7 @@ class SmartDevice extends EventEmitter {
     this.deviceWillSetData(data);
 
     const prevData = this.data;
+
     if (typeof data === 'object') {
       this.data = Object.assign({}, this.data, data);
     } else {
@@ -217,7 +218,13 @@ class SmartDevice extends EventEmitter {
     }
 
     return this.sendMessageWithResponse({ type: 'get' })
-      .then(message => this.setData(message.data))
+      .then(message => {
+        const { data } = message;
+
+        this.setData(data);
+
+        return data;
+      })
       .catch(error => {
         console.log('Sending message with response error', error);
 
