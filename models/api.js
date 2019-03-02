@@ -16,7 +16,7 @@ class API {
     const uid = this.generateUid();
     const newDevice = new database.Device({ uid, pid, vid, sno, model });
 
-    newDevice.save();
+    await newDevice.save();
 
     return newDevice;
   }
@@ -39,7 +39,9 @@ class API {
     return database.Device.findAll();
   }
 
-  unregisterDevice(uid) {}
+  async unregisterDevice(uid) {
+    await database.Device.remove({ uid });
+  }
 }
 
 module.exports = API;

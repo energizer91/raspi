@@ -4,7 +4,7 @@ class SmartSwitch extends SmartDevice {
   constructor(uid, smartHub, config) {
     super(uid, smartHub, config);
 
-    this.name = 'smartSwitch';
+    this.model = 'smartSwitch';
     this.name = 'Smart switch';
     this.config = config.config;
     this.data = Object.assign({

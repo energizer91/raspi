@@ -10,8 +10,10 @@ class SmartBulb extends SmartDevice {
       enabled: false,
       brightness: 0
     }, config.data);
+  }
 
-    this.services = [
+  getServices() {
+    return [
       {
         name: 'LightBulb',
         type: this.homebridge.hap.Service.Lightbulb,

@@ -29,8 +29,10 @@ class SmartDevice extends EventEmitter {
     this.services = []; // list of HomeKit services
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
-    this.updateInterval = null; // interval for updating data every minute
-    this.pingInterval = null; // interval for pinging device and disconnecting if something's wrong
+
+    if (this.homebridge) {
+      this.services = this.getServices();
+    }
   }
 
   load() {
@@ -94,6 +96,7 @@ class SmartDevice extends EventEmitter {
     this.deviceDidConnect(this.connection);
   }
 
+  /** set data for device and send it to device directly */
   setData(data, skipUpdate = false) {
     this.deviceWillSetData(data);
 
@@ -157,6 +160,11 @@ class SmartDevice extends EventEmitter {
     this.deviceDidUnload();
   }
 
+  /** Get available services if we have homebridge */
+  getServices() {
+    // console.log(this.uid, this.name, '-> I\'m trying to get services');
+  }
+
   // load methods
   deviceWillLoad() {
     // console.log(this.uid, this.name, '-> I will load soon');
@@ -202,7 +210,7 @@ class SmartDevice extends EventEmitter {
     // console.log(this.uid, this.name, '-> I just been unloaded');
   }
 
-  // ping device each minute
+  /** ping device each minute */
   ping() {
     this.sendMessageWithResponse({ type: 'ping' })
       .catch(error => {
@@ -213,7 +221,7 @@ class SmartDevice extends EventEmitter {
       })
   }
 
-  // get data directly from device
+  /** get data directly from device */
   getData() {
     if (!this.connection) {
       return Promise.resolve(this.data);
@@ -234,33 +242,33 @@ class SmartDevice extends EventEmitter {
       });
   }
 
-  // HomeKit devices identification
+  /** HomeKit devices identification */
   identify(paired) {
-    console.log(this.uid, this.name, '-> Identify!', paired);
+    console.log(this.uid, this.name, '-> Identify!', paired, this.connected);
 
-    return Promise.resolve(true);
+    return Promise.resolve(this.connected);
   }
 
-  // send data directly to device
+  /** send data directly to device */
   sendData(data) {
     this.sendMessage({ type: 'send', data });
   }
 
-  // get some specific information (called signals) from device
+  /** get some specific information (called signals) from device */
   onGetSignal(signal) {
     // console.log(this.uid, this.name, '-> I just got signal', signal);
   }
 
-  // send specific signal to device
+  /** send specific signal to device */
   sendSignal(signal) {
     // console.log(this.uid, this.name, '-> I\'m sending signal to device', signal);
     this.sendMessage({ type: 'signal', signal });
   }
 
-  // create HomeKit accessory
+  /** create HomeKit accessory */
   createAccessory() {
     if (!this.homebridge) {
-      throw new Error('Homebridge is not defined');
+      return;
     }
 
     this.accessory = new this.homebridge.platformAccessory(this.model, this.uid);
@@ -284,10 +292,10 @@ class SmartDevice extends EventEmitter {
     return this.accessory;
   }
 
-  // attach HomeKit characteristics to accessory
+  /** attach HomeKit characteristics to accessory */
   attachServiceCharacteristics(accessory) {
     if (!this.homebridge) {
-      throw new Error('Homebridge is not defined');
+      return;
     }
 
     this.accessory = accessory;
@@ -295,7 +303,7 @@ class SmartDevice extends EventEmitter {
     this.attachSensorsData();
   }
 
-  // attach sensors data to accessories
+  /** attach sensors data to accessories */
   attachSensorsData() {
     if (!this.services || !this.services.length) {
       console.log(this.uid, this.name, '-> No services found');
@@ -307,8 +315,12 @@ class SmartDevice extends EventEmitter {
     this.enableUpdates();
   }
 
-  // attach sensor data per each sensor
+  /** attach sensor data per each sensor */
   attachSensorData(service) {
+    if (!this.homebridge) {
+      return;
+    }
+
     if (!service) {
       return;
     }
@@ -335,7 +347,7 @@ class SmartDevice extends EventEmitter {
         this.accessory.getService(service.name)
           .getCharacteristic(characteristic.type)
           .on('set', (value, callback) => {
-            console.log(this.uid, this.name, '-> Get', service.name, characteristic.set(value));
+            console.log(this.uid, this.name, '-> Set', service.name, characteristic.set(value));
 
             this.setData(characteristic.set(value));
 
@@ -351,9 +363,11 @@ class SmartDevice extends EventEmitter {
     })
   }
 
-  // update devices info every minute
+  /** update devices info every minute */
   notifyChanges() {
     if (!this.connected) {
+      this.disableUpdates();
+
       return;
     }
 

@@ -12,8 +12,10 @@ class DummyDevice extends SmartDevice {
       value: 0,
       enabled: false
     }, config.data);
+  }
 
-    this.services = [
+  getServices() {
+    return [
       {
         name: 'LightBulb',
         type: this.homebridge.hap.Service.Lightbulb,

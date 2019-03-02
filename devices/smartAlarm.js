@@ -1,6 +1,6 @@
 const SmartDevice = require('../models/smartDevice');
 
-class SmartThermometer extends SmartDevice {
+class SmartAlarm extends SmartDevice {
   constructor(uid, smartHub, config) {
     super(uid, smartHub, config);
 
@@ -9,8 +9,10 @@ class SmartThermometer extends SmartDevice {
     this.data = Object.assign({
       lightLevel: 0
     }, config.data);
+  }
 
-    this.services = [
+  getServices() {
+    return [
       {
         name: 'Light',
         type: this.homebridge.hap.Service.LightSensor,
@@ -19,10 +21,10 @@ class SmartThermometer extends SmartDevice {
             type: this.homebridge.hap.Characteristic.CurrentAmbientLightLevel,
             get: data => data.lightLevel
           }
-        ],
+        ]
       }
-    ]
+    ];
   }
 }
 
-module.exports = SmartThermometer;
+module.exports = SmartAlarm;

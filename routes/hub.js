@@ -4,7 +4,7 @@ const router = express.Router();
 router.get('/devices', function(req, res) {
   const devices = req.smartHub.getRegisteredDevices();
 
-  return res.json(Object.values(devices).map(device => ({
+  return res.json(Array.from(devices).map(([_, device]) => ({
     uid: device.uid,
     name: device.name,
     connected: device.connected,

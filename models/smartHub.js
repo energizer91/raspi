@@ -1,6 +1,6 @@
-const API = require('./filebase');
+const API = require('./api');
 const WebSocket = require('ws');
-const devices = require('../devices');
+const deviceModels = require('../devices');
 const EventEmitter = require('events');
 
 class SmartHub extends EventEmitter {
@@ -8,8 +8,7 @@ class SmartHub extends EventEmitter {
     super();
 
     this.api = new API();
-    this.devices = {};
-    this.name = 'energizer91\'s Smart hub';
+    this.devices = new Map();
     this.manufacturer = 'energizer91';
     this.homebridge = homebridge;
 
@@ -28,24 +27,24 @@ class SmartHub extends EventEmitter {
       return;
     }
 
-    if (!devices[dbDevice.model]) {
+    if (!deviceModels[dbDevice.model]) {
       throw new Error('Device model not found');
     }
 
-    const Device = devices[dbDevice.model];
+    const Device = deviceModels[dbDevice.model];
 
     const device = new Device(dbDevice.uid, {
       getDevice: uid => this.getDeviceInstance(uid),
-      emit: (...args) => this.emit(...args),
+      emit: (event, ...args) => this.emit(event, ...args),
       homebridge: this.homebridge,
       manufacturer: this.manufacturer
     }, dbDevice);
 
     device.load();
 
-    this.devices[dbDevice.uid] = device;
+    this.devices.set(dbDevice.uid, device);
 
-    return this.devices[dbDevice.uid];
+    return device;
   }
 
   unregisterDevice(uid) {
@@ -67,8 +66,8 @@ class SmartHub extends EventEmitter {
   }
 
   async getDevice(uid) {
-    if (this.devices[uid]) {
-      return this.devices[uid];
+    if (this.devices.has(uid)) {
+      return this.devices.get(uid);
     }
 
     const device = await this.api.getDevice(uid);
@@ -96,7 +95,7 @@ class SmartHub extends EventEmitter {
   }
 
   getDeviceInstance(uid) {
-    return this.devices[uid];
+    return this.devices.get(uid);
   }
 }
 

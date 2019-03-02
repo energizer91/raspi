@@ -1,10 +1,11 @@
 import { SmartHub, HomeBridge } from './smartHub';
 import HAPNodeJS from './hap-nodejs';
 import Timeout = NodeJS.Timeout;
+import {EventEmitter} from "events";
 
 export type ServiceCharacteristic = {
     type: HAPNodeJS.Characteristic,
-    props?: object,
+    props?: Partial<HAPNodeJS.CharacteristicProps>,
     get?: (data: any) => any,
     set?: (value: any) => any
 }
@@ -15,18 +16,18 @@ export interface SmartDeviceService {
     characteristics: ServiceCharacteristic[],
 }
 
-type DeviceConfig = {
-    uid: string,
-    vid: string,
-    pid: string,
-    sno: string,
-    model: string,
-    active: boolean,
-    data?: object,
-    config?: object
+interface DeviceConfig<D> {
+    uid: string;
+    vid: string;
+    pid: string;
+    sno: string;
+    model: string;
+    active: boolean;
+    data?: D;
+    config?: object;
 }
 
-export interface SmartDevice<D> {
+export class SmartDevice<D> extends EventEmitter {
     uid: string;
     smartHub: SmartHub;
     homebridge: HomeBridge;
@@ -41,7 +42,7 @@ export interface SmartDevice<D> {
     dweetUrl: string;
     updateInterval: Timeout;
     pingInterval: Timeout;
-    constructor(uid: string, smartHub: SmartHub, config: DeviceConfig): void;
+    constructor(uid: string, smartHub: SmartHub, config: DeviceConfig<D>);
     load(): void;
     sendMessage(data: object): void;
     receiveMessage(message: object): void;

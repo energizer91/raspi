@@ -10,8 +10,10 @@ class SmartThermometer extends SmartDevice {
       temperature: 0,
       humidity: 0
     }, config.data);
+  }
 
-    this.services = [
+  getServices() {
+    return [
       {
         name: 'Temperature',
         type: this.homebridge.hap.Service.TemperatureSensor,
@@ -34,7 +36,7 @@ class SmartThermometer extends SmartDevice {
             type: this.homebridge.hap.Characteristic.CurrentRelativeHumidity,
             get: data => data.humidity
           }
-        ],
+        ]
       }
     ];
   }

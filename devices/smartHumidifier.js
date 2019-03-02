@@ -15,8 +15,10 @@ class SmartHumidifier extends SmartDevice {
       lowWaterLevel: false,
       doorOpen: false
     }, config.data);
+  }
 
-    this.services = [
+  getServices() {
+    return [
       {
         name: 'Fan',
         type: this.homebridge.hap.Service.Fan,

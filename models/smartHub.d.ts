@@ -9,8 +9,10 @@ export interface HomeBridge {
     hap: HAPNodeJS.HAPNodeJS
 }
 
-export interface SmartHub extends EventEmitter {
+export class SmartHub extends EventEmitter {
     constructor(homebridge: HomeBridge);
+    on(event: 'newDevice', listener: (device: SmartDevice<any>) => void): this;
+    on(event: 'removeDevice', listener: (device: SmartDevice<any>) => void): this;
     registerDevice(dbDevice: DBDevice): void;
     unregisterDevice(uid: string): void;
     getRegisteredDevices(): SmartDevice<any>[];
