@@ -45,11 +45,11 @@ module.exports = function(homebridge) {
     }
 
     registerAccessories(accessories) {
-      this.api.registerPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.name, accessories);
+      this.api.registerPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.friendlyName, accessories);
     }
 
     unregisterAccessories(accessories) {
-      this.api.unregisterPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.name, accessories);
+      this.api.unregisterPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.friendlyName, accessories);
     }
 
     // Function invoked when homebridge tries to restore cached accessory.
@@ -109,7 +109,7 @@ module.exports = function(homebridge) {
   }
 
   SmartHubPlatform.package = "homebridge-mysmarthub"; // package name for homebridge
-  SmartHubPlatform.name = 'energizer91\'s Smart hub'; // friendly name of hub
+  SmartHubPlatform.friendlyName = 'energizer91\'s Smart hub'; // friendly name of hub
 
   return SmartHubPlatform;
 };
