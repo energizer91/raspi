@@ -7,7 +7,7 @@ class API {
   }
 
   async registerDevice(pid, vid, sno, model) {
-    let dbDevice = await database.Device.findOne({ pid, vid, sno, model });
+    let dbDevice = await database.Device.findOne({where: { pid, vid, sno, model }});
 
     if (dbDevice) {
       return dbDevice;
@@ -22,7 +22,7 @@ class API {
   }
 
   getDevice(uid) {
-    return database.Device.findOne({ uid });
+    return database.Device.findOne({where: { uid }});
   }
 
   async getDeviceByVendorData(vid, pid, sno) {
