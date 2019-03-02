@@ -259,6 +259,64 @@ class SmartDevice extends EventEmitter {
     // console.log(this.uid, this.name, '-> I just got signal', signal);
   }
 
+  onGetAPIRequest(request = { uuid: '', command: '', payload: {} }) {
+    if (!request.uuid) {
+      console.error(this.uid, this.name, '-> Invalid Request: no uuid field', request);
+    }
+
+    const uuid = request.uuid;
+
+    switch (request.command) {
+      case 'getDevices':
+        const devices = Array
+          .from(this.smartHub.getRegisteredDevices())
+          .map(([_, device]) => ({
+            uid: device.uid,
+            name: device.name,
+            connected: device.connected,
+            registered: device.registered
+          }));
+
+        return this.sendAPIResponse(uuid, { devices });
+      case 'getDevice':
+        if (!request.payload) {
+          return this.sendAPIError(uuid, 'No payload');
+        }
+
+        const device = this.smartHub.getDevice(request.payload.uid);
+
+        if (!device) {
+          return this.sendAPIError(uuid, 'Device is not found');
+        }
+
+        return this.sendAPIResponse(uuid, {
+          uid: device.uid,
+          name: device.name,
+          connected: device.connected,
+          registered: device.registered,
+          data: device.data
+        });
+      default:
+        return this.sendAPIError(uuid, 'Unknown command ' + request.command);
+    }
+  }
+
+  sendAPIResponse(uuid, response) {
+    return this.sendMessage({
+      type: 'response',
+      uuid,
+      response
+    })
+  }
+
+  sendAPIError(uuid, message) {
+    return this.sendMessage({
+      type: 'response_error',
+      uuid,
+      message
+    });
+  }
+
   /** send specific signal to device */
   sendSignal(signal) {
     // console.log(this.uid, this.name, '-> I\'m sending signal to device', signal);

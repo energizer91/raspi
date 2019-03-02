@@ -12,6 +12,14 @@ router.get('/devices', function(req, res) {
   })));
 });
 
+router.get('/devices/db', (req, res, next) => {
+  const api = req.smartHub.getApi();
+
+  api.getAllDevices()
+    .then(devices => res.json(devices))
+    .catch(next);
+});
+
 router.get('/devices/:device', (req, res, next) => {
   const device = req.smartHub.getDeviceInstance(req.params.device);
 
@@ -26,6 +34,16 @@ router.get('/devices/:device', (req, res, next) => {
     registered: device.registered,
     data: device.data
   });
+});
+
+router.post('/devices/mock', (req, res, next) => {
+  const devices = require('../models/filebase');
+
+  const database = req.smartHub.getApi().getDatabase();
+
+  database.Device.bulkCreate(devices)
+    .then(() => res.send('ok'))
+    .catch(next);
 });
 
 router.post('/devices/:device/send', (req, res, next) => {

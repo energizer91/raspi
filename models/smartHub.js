@@ -34,6 +34,7 @@ class SmartHub extends EventEmitter {
     const Device = deviceModels[dbDevice.model];
 
     const device = new Device(dbDevice.uid, {
+      getRegisteredDevices: () => this.getRegisteredDevices(),
       getDevice: uid => this.getDeviceInstance(uid),
       emit: (event, ...args) => this.emit(event, ...args),
       homebridge: this.homebridge,
@@ -59,6 +60,10 @@ class SmartHub extends EventEmitter {
     }
 
     device.unload();
+  }
+
+  getApi() {
+    return this.api;
   }
 
   getRegisteredDevices() {

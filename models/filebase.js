@@ -125,4 +125,4 @@ class API {
   unregisterDevice(uid) {}
 }
 
-module.exports = API;
+module.exports = records;

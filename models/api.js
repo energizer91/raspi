@@ -39,6 +39,10 @@ class API {
     return database.Device.findAll();
   }
 
+  getDatabase() {
+    return database;
+  }
+
   async unregisterDevice(uid) {
     await database.Device.remove({ uid });
   }
