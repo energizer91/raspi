@@ -122,7 +122,7 @@ class SmartDevice extends EventEmitter {
   processMessage(data) {
     const message = JSON.parse(data);
 
-    if (message.uuid) {
+    if (message.uuid && message.type !== 'request') {
       return this.receiveMessage(message);
     }
 
