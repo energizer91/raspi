@@ -130,6 +130,9 @@ class SmartDevice extends EventEmitter {
       case 'signal':
         this.onGetSignal(message.signal);
         break;
+      case 'request':
+        this.onGetAPIRequest(message);
+        break;
       default:
         console.log(this.uid, this.name, '-> Unhandled message', message);
     }
