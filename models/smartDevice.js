@@ -299,6 +299,27 @@ class SmartDevice extends EventEmitter {
           registered: device.registered,
           data: device.data
         });
+      case 'makeHTTPCall':
+        if (!request.payload) {
+          return this.sendAPIError(uuid, 'No payload');
+        }
+
+        if (!request.payload.method) {
+          return this.sendAPIError(uuid, 'No method');
+        }
+
+        if (!request.payload.url) {
+          return this.sendAPIError(uuid, 'No URL');
+        }
+
+        if (!request.payload.data || !request.payload.params) {
+          return this.sendAPIError(uuid, 'No data or params');
+        }
+
+        return axios(request.payload)
+          .then(response => this.sendAPIResponse(uuid, response.data))
+          .catch(error => this.sendAPIError(uuid, JSON.stringify(error.response)));
+
       default:
         return this.sendAPIError(uuid, 'Unknown command ' + request.command);
     }
