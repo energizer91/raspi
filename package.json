@@ -8,7 +8,7 @@
   "dependencies": {
     "@types/sequelize": "^4.27.29",
     "@types/ws": "^6.0.1",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "config": "^2.0.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
