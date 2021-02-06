@@ -2,7 +2,6 @@ const API = require('./api');
 const WebSocket = require('ws');
 const deviceModels = require('../devices');
 const EventEmitter = require('events');
-const config = require('config');
 
 class SmartHub extends EventEmitter {
   constructor(homebridge, prometheusRegister) {
@@ -10,11 +9,11 @@ class SmartHub extends EventEmitter {
 
     this.api = new API();
     this.devices = new Map();
-    this.manufacturer = config.get("smarthub.manufacturer");
+    this.manufacturer = "energizer91";
     this.homebridge = homebridge;
     this.prometheusRegister = prometheusRegister;
 
-    this.wss = new WebSocket.Server({port: config.get("connection.port")});
+    this.wss = new WebSocket.Server({port: 8080});
 
     this.wss.on('connection', (ws, req) => {
       const {pid, vid, sno} = req.headers;

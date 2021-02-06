@@ -8,7 +8,7 @@ module.exports = function(homebridge) {
   const register = new client.Registry();
 
   // Add a default label which is added to all metrics
-  register.setDefaultLabels({app: config.get("smarthub.name")});
+  register.setDefaultLabels({app: "raspi"});
 
   // Enable the collection of default metrics
   client.collectDefaultMetrics({ register });
@@ -121,8 +121,8 @@ module.exports = function(homebridge) {
     }
   }
 
-  SmartHubPlatform.package = config.get("platform.package"); // package name for homebridge
-  SmartHubPlatform.friendlyName = config.get("platform.friendlyName"); // friendly name of hub
+  SmartHubPlatform.package = "homebridge-mysmarthub"; // package name for homebridge
+  SmartHubPlatform.friendlyName = 'energizer91\'s Smart hub'; // friendly name of hub
 
   return SmartHubPlatform;
 };
