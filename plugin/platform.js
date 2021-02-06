@@ -2,23 +2,22 @@ const SmartHub = require('../models/smartHub');
 const app = require('../bin/www');
 const hubRouter = require('../routes/hub');
 const client = require('prom-client');
-const config = require('config');
 
 module.exports = function(homebridge) {
-  const register = new client.Registry();
-
-  // Add a default label which is added to all metrics
-  register.setDefaultLabels({app: "raspi"});
-
-  // Enable the collection of default metrics
-  client.collectDefaultMetrics({ register });
-
   // Platform constructor
   // config may be null
   // api may be null if launched from old homebridge version
   class SmartHubPlatform {
     constructor(log, config, api) {
       log('SmartHub platform Init');
+
+      const register = new client.Registry();
+
+      // Add a default label which is added to all metrics
+      register.setDefaultLabels({app: "rasppi"});
+
+      // Enable the collection of default metrics
+      client.collectDefaultMetrics({ register });
 
       this.log = log;
       this.config = config;
