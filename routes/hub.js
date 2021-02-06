@@ -142,18 +142,10 @@ router.get('/uid', (req, res) => {
 });
 
 router.get("/metrics", (req, res) => {
-  const devices = req.smartHub.getRegisteredDevices();
+  const register = req.register;
 
-  return res.json({
-    status: "ok",
-    devices: Array.from(devices).map(([_, device]) => ({
-      uid: device.uid,
-      name: device.name,
-      connected: device.connected,
-      registered: device.registered,
-      data: device.data
-    }))
-  });
+  res.setHeader('Content-Type', register.contentType)
+  res.end(register.metrics());
 })
 
 module.exports = router;

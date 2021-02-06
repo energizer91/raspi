@@ -20,6 +20,7 @@ class SmartDevice extends EventEmitter {
     this.sno = config.sno; // device serial number
     this.smartHub = smartHub; // device low level api
     this.homebridge = smartHub.homebridge; // homebridge instance
+    this.register = smartHub.register;
     this.model = 'smartDevice'; // device model for HomeKit
     this.name = 'Smart device ' + this.uid; // device display name
     this.connection = null; // device websocket connection
@@ -418,17 +419,30 @@ class SmartDevice extends EventEmitter {
     }
 
     service.characteristics.forEach(characteristic => {
+      if (characteristic.metric && characteristic.metric.type) {
+        const {type: MetricType, ...rest} = characteristic.metric;
+
+        characteristic.metric.instance = new MetricType(rest);
+
+        this.register.registerMetric(characteristic.metric.instance);
+      }
+
       if (characteristic.get) {
         this.accessory.getService(service.name)
           .getCharacteristic(characteristic.type)
           .on('get', callback => this.getData()
             .then(data => {
+              const value = characteristic.get(data);
 
-              console.log(this.uid, this.name, '-> Get', service.name, characteristic.get(data));
+              console.log(this.uid, this.name, '-> Get', service.name, value);
 
-              callback(null, characteristic.get(data))
+              if (characteristic.metric.instance) {
+                characteristic.metric.instance.set(value);
+              }
+
+              callback(null, value);
             })
-            .catch(err => callback(err)));
+            .catch(callback));
       }
 
       if (characteristic.set) {
@@ -462,8 +476,8 @@ class SmartDevice extends EventEmitter {
     this.getData()
       .then(data => {
         if (!this.services || !this.services.length || !this.accessory) {
-          console.log(this.uid, this.name, '-> No service or accesosory found');
-	  return;
+          console.log(this.uid, this.name, '-> No service or accessory found');
+	        return;
         }
 
         this.services.forEach(service => {

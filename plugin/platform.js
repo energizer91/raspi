@@ -1,8 +1,18 @@
 const SmartHub = require('../models/smartHub');
 const app = require('../bin/www');
 const hubRouter = require('../routes/hub');
+const client = require('prom-client');
+const config = require('config');
 
 module.exports = function(homebridge) {
+  const register = new client.Registry();
+
+  // Add a default label which is added to all metrics
+  register.setDefaultLabels({app: config.get("smarthub.name")});
+
+  // Enable the collection of default metrics
+  client.collectDefaultMetrics({ register });
+
   // Platform constructor
   // config may be null
   // api may be null if launched from old homebridge version
@@ -12,13 +22,16 @@ module.exports = function(homebridge) {
 
       this.log = log;
       this.config = config;
-      this.hub = new SmartHub(homebridge); // link homebridge to smarthub
+      this.hub = new SmartHub(homebridge, register); // link homebridge to smarthub
 
-      app.use('/hub', (req, res, next) => {
+      const hubMiddleware = (req, res, next) => {
         req.smartHub = this.hub;
+        req.register = register;
 
         return next();
-      }, hubRouter);
+      };
+
+      app.use('/hub', hubMiddleware, hubRouter);
 
       if (api) {
         this.api = api;
@@ -108,8 +121,8 @@ module.exports = function(homebridge) {
     }
   }
 
-  SmartHubPlatform.package = "homebridge-mysmarthub"; // package name for homebridge
-  SmartHubPlatform.friendlyName = 'energizer91\'s Smart hub'; // friendly name of hub
+  SmartHubPlatform.package = config.get("platform.package"); // package name for homebridge
+  SmartHubPlatform.friendlyName = config.get("platform.friendlyName"); // friendly name of hub
 
   return SmartHubPlatform;
 };

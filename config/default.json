@@ -3,12 +3,19 @@
     "port": 8080,
     "timeout": 10000
   },
+  "smarthub": {
+    "name": "raspi",
+    "manufacturer": "energizer91"
+  },
+  "plugin": {
+    "package": "homebridge-mysmarthub",
+    "friendlyName": "energizer91's Smart hub"
+  },
   "database": {
     "name": "raspi",
     "username": "user",
     "password": "",
     "connection": {
-      "host": "localhost",
       "dialect": "sqlite",
       "operatorAliases": false,
       "pool": {
