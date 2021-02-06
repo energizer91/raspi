@@ -5,5 +5,5 @@ module.exports = function homeBridgeConstructor(homebridge) {
 
   // For platform plugin to be considered as dynamic platform plugin,
   // registerPlatform(pluginName, platformName, constructor, dynamic), dynamic must be true
-  homebridge.registerPlatform(SmartHubPlatform.package, SmartHubPlatform.friendlyName, SmartHubPlatform, true);
+  homebridge.registerPlatform(SmartHubPlatform.package, SmartHubPlatform);
 };

@@ -14,7 +14,7 @@ module.exports = function(homebridge) {
       const register = new client.Registry();
 
       // Add a default label which is added to all metrics
-      register.setDefaultLabels({app: "rasppi"});
+      register.setDefaultLabels({app: "raspi"});
 
       // Enable the collection of default metrics
       client.collectDefaultMetrics({ register });
@@ -26,6 +26,7 @@ module.exports = function(homebridge) {
       const hubMiddleware = (req, res, next) => {
         req.smartHub = this.hub;
         req.register = register;
+        req.log = this.log;
 
         return next();
       };

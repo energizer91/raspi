@@ -4,8 +4,8 @@ type ConfigurationRequestHandler = (context: any, request: any, callback: () => 
 
 declare class HomeBridgeAPI {
     version: string;
-    registerAccessory(pluginName: string, platformName: string, constructor: HAPNodeJS.Accessory, configurationRequestHandler: ConfigurationRequestHandler): void;
-    registerPlatform(pluginName: string, platformName: string, constructor: SmartHubPlatform, dynamic: boolean): void;
+    registerAccessory(pluginName: string, constructor: HAPNodeJS.Accessory, configurationRequestHandler: ConfigurationRequestHandler): void;
+    registerPlatform(pluginName: string, constructor: SmartHubPlatform): void;
     registerPlatformAccessories(pluginName: string, platformName: string, accessories: HAPNodeJS.Accessory[]): void;
     updatePlatformAccessories(accessories: HAPNodeJS.Accessory[]): void;
     unregisterPlatformAccessories(pluginName: string, platformName: string, accessories: HAPNodeJS.Accessory[]): void;
