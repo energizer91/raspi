@@ -122,6 +122,7 @@ class SmartDevice extends EventEmitter {
   processMessage(data) {
     const message = JSON.parse(data);
 
+    console.log('Processing message', message);
     if (message.uuid && message.type !== 'request') {
       return this.receiveMessage(message);
     }
@@ -312,12 +313,17 @@ class SmartDevice extends EventEmitter {
           return this.sendAPIError(uuid, 'No URL');
         }
 
-        if (!request.payload.data || !request.payload.params) {
+        if (!request.payload.data && !request.payload.params) {
           return this.sendAPIError(uuid, 'No data or params');
         }
 
+        console.log('Making API request', uuid, request.payload);
+
         return axios(request.payload)
-          .then(response => this.sendAPIResponse(uuid, response.data))
+          .then(response => {
+	    console.log('Getting API response', uuid, response);  
+	    return this.sendAPIResponse(uuid, response.data);
+	  })
           .catch(error => this.sendAPIError(uuid, JSON.stringify(error.response)));
 
       default:
@@ -448,7 +454,7 @@ class SmartDevice extends EventEmitter {
   /** update devices info every minute */
   notifyChanges() {
     if (!this.connected) {
-      this.disableUpdates();
+      // this.disableUpdates();
 
       return;
     }
@@ -456,7 +462,8 @@ class SmartDevice extends EventEmitter {
     this.getData()
       .then(data => {
         if (!this.services || !this.services.length || !this.accessory) {
-          return;
+          console.log(this.uid, this.name, '-> No service or accesosory found');
+	  return;
         }
 
         this.services.forEach(service => {
