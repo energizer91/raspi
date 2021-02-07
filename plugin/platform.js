@@ -58,11 +58,11 @@ module.exports = function(homebridge) {
     }
 
     registerAccessories(accessories) {
-      this.api.registerPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.friendlyName, accessories);
+      this.api.registerPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.package, accessories);
     }
 
     unregisterAccessories(accessories) {
-      this.api.unregisterPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.friendlyName, accessories);
+      this.api.unregisterPlatformAccessories(SmartHubPlatform.package, SmartHubPlatform.package, accessories);
     }
 
     // Function invoked when homebridge tries to restore cached accessory.

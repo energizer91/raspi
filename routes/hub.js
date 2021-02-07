@@ -145,7 +145,7 @@ router.get("/metrics", (req, res) => {
   const register = req.register;
 
   res.setHeader('Content-Type', register.contentType)
-  res.end(register.metrics());
+  res.send(register.metrics());
 })
 
 module.exports = router;
