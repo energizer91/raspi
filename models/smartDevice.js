@@ -30,14 +30,14 @@ class SmartDevice extends EventEmitter {
     this.services = []; // list of HomeKit services
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
-
-    if (this.homebridge) {
-      this.services = this.getServices();
-    }
   }
 
   load() {
     this.deviceWillLoad();
+
+    if (this.homebridge) {
+      this.services = this.getServices();
+    }
 
     this.registered = true;
     this.emit('load');

@@ -23,7 +23,7 @@ class SmartThermometer extends SmartDevice {
             type: this.homebridge.hap.Characteristic.CurrentTemperature,
             metric: {
               type: client.Gauge,
-              name: this.uid + '_temperature',
+              name: this.model + '_temperature',
               help: 'Current temperature'
             },
             get: data => data.temperature,
@@ -42,7 +42,7 @@ class SmartThermometer extends SmartDevice {
             type: this.homebridge.hap.Characteristic.CurrentRelativeHumidity,
             metric: {
               type: client.Gauge,
-              name: this.uid + '_humidity',
+              name: this.model + '_humidity',
               help: 'Current relative humidity'
             },
             get: data => data.humidity
