@@ -1,17 +1,11 @@
-const SmartDevice = require('../models/smartDevice');
+const SmartThermometer = require('./smartThermometer');
 
-class SmartMeteoStation extends SmartDevice {
+class SmartMeteoStation extends SmartThermometer {
   constructor(uid, smartHub, config) {
     super(uid, smartHub, config);
 
     this.model = 'SmartMeteoStation';
     this.name = 'Smart meteo station';
-    this.data = Object.assign({
-      weather: "",
-      city: "",
-      temperature: 0,
-      humidity: 0
-    }, config.data);
   }
 }
 
