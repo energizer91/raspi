@@ -96,18 +96,29 @@ class SmartDevice extends EventEmitter {
   }
 
   connect(connection) {
+    if (this.connected) {
+      this.disconnect();
+    }
+
     this.deviceWillConnect(connection);
     this.connection = connection;
     this.connected = true;
 
-    this.connection.on('close', () => this.disconnect());
-    this.connection.on('error', () => this.disconnect());
+    this.connection.on('close', (code) => {
+      this.error("Connection has been closed with code", code);
+      this.disconnect();
+    });
+    this.connection.on('error', (error) => {
+      this.error("Connection error", error);
+      this.disconnect();
+    });
     this.connection.on('message', message => this.processMessage(message));
-    this.connection.on("ping", () => this.log("Getting ping"));
-    this.connection.on("pong", () => this.log("Setting pong"));
+    this.connection.on("ping", () => this.log("Sending ping"));
+    this.connection.on("pong", () => this.log("Getting pong"));
     this.sendData(this.data);
     this.emit('connected');
-    // this.pingInterval = setInterval(() => this.ping(), 60000);
+
+    this.enableUpdates();
 
     this.deviceDidConnect(this.connection);
   }
@@ -156,9 +167,13 @@ class SmartDevice extends EventEmitter {
   }
 
   disconnect() {
+    if (!this.connected) {
+      return;
+    }
+
     this.deviceWillDisconnect();
 
-    clearInterval(this.pingInterval);
+    this.disableUpdates();
 
     if (this.connection) {
       this.connection.close();
@@ -417,7 +432,6 @@ class SmartDevice extends EventEmitter {
     }
 
     this.services.forEach(service => this.attachSensorData(service));
-    this.enableUpdates();
   }
 
   /** attach sensor data per each sensor */
@@ -484,8 +498,6 @@ class SmartDevice extends EventEmitter {
   /** update devices info every minute */
   notifyChanges() {
     if (!this.connected) {
-      // this.disableUpdates();
-
       return;
     }
 
