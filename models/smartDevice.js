@@ -103,9 +103,11 @@ class SmartDevice extends EventEmitter {
     this.connection.on('close', () => this.disconnect());
     this.connection.on('error', () => this.disconnect());
     this.connection.on('message', message => this.processMessage(message));
+    this.connection.on("ping", () => this.log("Getting ping"));
+    this.connection.on("pong", () => this.log("Setting pong"));
     this.sendData(this.data);
     this.emit('connected');
-    this.pingInterval = setInterval(() => this.ping(), 60000);
+    // this.pingInterval = setInterval(() => this.ping(), 60000);
 
     this.deviceDidConnect(this.connection);
   }
