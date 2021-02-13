@@ -60,7 +60,7 @@ class SmartDevice extends EventEmitter {
 
   sendMessage(data) {
     if (!this.connection) {
-      console.error('Connection is not established');
+      this.error('Connection is not established');
       return;
     }
 
@@ -136,7 +136,7 @@ class SmartDevice extends EventEmitter {
   processMessage(data) {
     const message = JSON.parse(data);
 
-    console.log('Processing message', message);
+    this.log('Processing message', message);
     if (message.uuid && message.type !== 'request') {
       return this.receiveMessage(message);
     }
@@ -255,7 +255,7 @@ class SmartDevice extends EventEmitter {
         return data;
       })
       .catch(error => {
-        console.log('Sending message with response error', error);
+        this.error('Sending message with response error', error);
 
         return this.data;
       });
@@ -332,11 +332,11 @@ class SmartDevice extends EventEmitter {
           return this.sendAPIError(uuid, 'No data or params');
         }
 
-        console.log('Making API request', uuid, request.payload);
+        this.log('Making API request', uuid, request.payload);
 
         return axios(request.payload)
           .then(response => {
-            console.log('Getting API response', uuid, response.data);
+            this.log('Getting API response', uuid, response.data);
             return this.sendAPIResponse(uuid, response.data);
           })
           .catch(error => this.sendAPIError(uuid, JSON.stringify(error.response)));

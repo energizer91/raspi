@@ -20,7 +20,7 @@ class SmartHub extends EventEmitter {
       const {pid, vid, sno} = req.headers;
 
       this.connectDevice(ws, {pid, vid, sno})
-        .catch(error => console.error('Error connecting device', error));
+        .catch(error => this.log.error('Error connecting device', error));
     })
   }
 

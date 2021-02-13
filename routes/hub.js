@@ -141,11 +141,14 @@ router.get('/uid', (req, res) => {
   res.send(req.smartHub.api.generateUid());
 });
 
-router.get("/metrics", (req, res) => {
+router.get("/metrics", (req, res, next) => {
   const register = req.register;
 
-  res.setHeader('Content-Type', register.contentType)
-  res.send(register.metrics());
+  res.setHeader('Content-Type', register.contentType);
+
+  register.metrics()
+    .then(res.send)
+    .catch(next);
 })
 
 module.exports = router;
