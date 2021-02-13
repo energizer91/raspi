@@ -113,8 +113,7 @@ class SmartDevice extends EventEmitter {
       this.disconnect("error");
     });
     this.connection.on('message', message => this.processMessage(message));
-    this.connection.on("ping", () => this.log("Sending ping"));
-    this.connection.on("pong", () => this.log("Getting pong"));
+
     this.sendData(this.data);
     this.emit('connected');
 
@@ -176,7 +175,7 @@ class SmartDevice extends EventEmitter {
     this.disableUpdates();
 
     if (this.connection) {
-      this.connection.terminate();
+      this.connection.close();
     }
 
     this.log("Disconnected due to reason", reason);
