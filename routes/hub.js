@@ -147,7 +147,7 @@ router.get("/metrics", (req, res, next) => {
   res.setHeader('Content-Type', register.contentType);
 
   register.metrics()
-    .then(res.send)
+    .then((metrics) => res.send(metrics))
     .catch(next);
 })
 
