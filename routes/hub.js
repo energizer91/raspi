@@ -91,6 +91,24 @@ router.post('/devices/:device/unregister', (req, res, next) => {
   return res.send('ok');
 });
 
+
+
+router.post('/devices/:device/disconnect', (req, res, next) => {
+  const device = req.smartHub.getDeviceInstance(req.params.device);
+
+  if (!device) {
+    return next(new Error('Device not found'));
+  }
+
+  if (!device.connected) {
+    return next(new Error('Device is not connected'));
+  }
+
+  device.disconnect();
+
+  return res.send('ok');
+});
+
 router.get('/devices/:device/data', (req, res, next) => {
   const device = req.smartHub.getDeviceInstance(req.params.device);
 
