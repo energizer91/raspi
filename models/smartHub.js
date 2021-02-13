@@ -3,6 +3,12 @@ const WebSocket = require('ws');
 const deviceModels = require('../devices');
 const EventEmitter = require('events');
 
+function heartbeat() {
+  this.isAlive = true;
+}
+
+function noop() {}
+
 class SmartHub extends EventEmitter {
   constructor(homebridge, prometheusRegister, log) {
     super();
@@ -19,9 +25,28 @@ class SmartHub extends EventEmitter {
     this.wss.on('connection', (ws, req) => {
       const {pid, vid, sno} = req.headers;
 
+      ws.on('pong', heartbeat);
+
       this.connectDevice(ws, {pid, vid, sno})
         .catch(error => this.log.error('Error connecting device', error));
     })
+
+    this.pingInterval = setInterval(() => {
+      this.wss.clients.forEach(ws => {
+        if (ws.isAlive === false) {
+          this.log("Terminating client");
+          ws.terminate();
+          return;
+        }
+
+        ws.isAlive = false;
+        ws.ping(noop);
+      });
+    }, 30000);
+
+    this.wss.on('close', function close() {
+      clearInterval(this.pingInterval);
+    });
   }
 
   registerDevice(dbDevice) {
