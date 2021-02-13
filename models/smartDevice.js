@@ -322,9 +322,9 @@ class SmartDevice extends EventEmitter {
 
         return axios(request.payload)
           .then(response => {
-	    console.log('Getting API response', uuid, response);  
-	    return this.sendAPIResponse(uuid, response.data);
-	  })
+            console.log('Getting API response', uuid, response.data);
+            return this.sendAPIResponse(uuid, response.data);
+          })
           .catch(error => this.sendAPIError(uuid, JSON.stringify(error.response)));
 
       default:
