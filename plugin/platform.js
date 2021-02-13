@@ -21,7 +21,7 @@ module.exports = function(homebridge) {
 
       this.log = log;
       this.config = config;
-      this.hub = new SmartHub(homebridge, register); // link homebridge to smarthub
+      this.hub = new SmartHub(homebridge, register, log); // link homebridge to smarthub
 
       const hubMiddleware = (req, res, next) => {
         req.smartHub = this.hub;

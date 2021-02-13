@@ -4,7 +4,7 @@ const deviceModels = require('../devices');
 const EventEmitter = require('events');
 
 class SmartHub extends EventEmitter {
-  constructor(homebridge, prometheusRegister) {
+  constructor(homebridge, prometheusRegister, log) {
     super();
 
     this.api = new API();
@@ -12,6 +12,7 @@ class SmartHub extends EventEmitter {
     this.manufacturer = "energizer91";
     this.homebridge = homebridge;
     this.prometheusRegister = prometheusRegister;
+    this.log = log;
 
     this.wss = new WebSocket.Server({port: 8080});
 
@@ -40,7 +41,8 @@ class SmartHub extends EventEmitter {
       emit: (event, ...args) => this.emit(event, ...args),
       homebridge: this.homebridge,
       manufacturer: this.manufacturer,
-      register: this.prometheusRegister
+      register: this.prometheusRegister,
+      log: this.log,
     }, dbDevice);
 
     device.load();
