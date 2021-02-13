@@ -60,7 +60,7 @@ class SmartHub extends EventEmitter {
     }
 
     if (device.connected) {
-      device.disconnect();
+      device.disconnect("unregister");
     }
 
     device.unload();
@@ -96,7 +96,7 @@ class SmartHub extends EventEmitter {
 
     if (instance) {
       if (instance.connected) {
-        instance.disconnect();
+        instance.disconnect("connect");
       }
 
       instance.connect(connection);

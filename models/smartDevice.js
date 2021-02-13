@@ -97,7 +97,7 @@ class SmartDevice extends EventEmitter {
 
   connect(connection) {
     if (this.connected) {
-      this.disconnect();
+      this.disconnect("already_opened");
     }
 
     this.deviceWillConnect(connection);
@@ -106,11 +106,11 @@ class SmartDevice extends EventEmitter {
 
     this.connection.on('close', (code) => {
       this.error("Connection has been closed with code", code);
-      this.disconnect();
+      this.disconnect("closed");
     });
     this.connection.on('error', (error) => {
       this.error("Connection error", error);
-      this.disconnect();
+      this.disconnect("error");
     });
     this.connection.on('message', message => this.processMessage(message));
     this.connection.on("ping", () => this.log("Sending ping"));
@@ -166,7 +166,7 @@ class SmartDevice extends EventEmitter {
     }
   }
 
-  disconnect() {
+  disconnect(reason = "no_reason") {
     if (!this.connected) {
       return;
     }
@@ -178,6 +178,8 @@ class SmartDevice extends EventEmitter {
     if (this.connection) {
       this.connection.close();
     }
+
+    this.log("Disconnected due to reason", reason);
 
     this.connection = null;
     this.connected = false;
@@ -253,7 +255,7 @@ class SmartDevice extends EventEmitter {
         this.error('Sending ping error', error);
         this.error('Device is not responding. Disconnecting...');
 
-        this.disconnect();
+        this.disconnect("ping_failed");
       })
   }
 
