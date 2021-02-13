@@ -450,7 +450,7 @@ class SmartDevice extends EventEmitter {
 
               this.log('Get', service.name, value);
 
-              if (characteristic.metric.instance) {
+              if (characteristic.metric && characteristic.metric.instance) {
                 characteristic.metric.instance.set(value);
               }
 
@@ -496,11 +496,17 @@ class SmartDevice extends EventEmitter {
 
         this.services.forEach(service => {
           service.characteristics.forEach(characteristic => {
+            const value = characteristic.get(data);
             this.log('Update', service.name, characteristic.get(data));
+
+            if (characteristic.metric && characteristic.metric.instance) {
+              this.log('Setting metric', value);
+              characteristic.metric.instance.set(value);
+            }
 
             this.accessory.getService(service.name)
               .getCharacteristic(characteristic.type)
-              .updateValue(characteristic.get(data))
+              .updateValue(value)
           })
         });
 
