@@ -176,7 +176,7 @@ class SmartDevice extends EventEmitter {
     this.disableUpdates();
 
     if (this.connection) {
-      this.connection.close();
+      this.connection.terminate();
     }
 
     this.log("Disconnected due to reason", reason);
