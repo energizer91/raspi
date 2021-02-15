@@ -6,7 +6,7 @@ class API {
     return uuid();
   }
 
-  async registerDevice(pid, vid, sno, model) {
+  async registerDevice(pid, vid, sno, model, data) {
     let dbDevice = await database.Device.findOne({where: { pid, vid, sno, model }});
 
     if (dbDevice) {
@@ -14,7 +14,7 @@ class API {
     }
 
     const uid = this.generateUid();
-    const newDevice = new database.Device({ uid, pid, vid, sno, model });
+    const newDevice = new database.Device({ uid, pid, vid, sno, model, data });
 
     await newDevice.save();
 

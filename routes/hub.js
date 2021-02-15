@@ -63,6 +63,20 @@ router.post('/devices/:device/send', (req, res, next) => {
   return res.send('ok');
 });
 
+router.post('/devices/add', async (req, res, next) => {
+  const {vid, pid, sno, model, data} = req.body;
+
+  const found = await req.smartHub.api.getDeviceByVendorData(vid, pid, sno);
+
+  if (found) {
+    return next(new Error('Device is already added'));
+  }
+
+  const device = await req.smartHub.api.registerDevice(pid, vid, sno, model, data);
+
+  return res.json(req.smartHub.registerDevice(device));
+})
+
 router.post('/devices/:device/register', (req, res, next) => {
   const device = req.smartHub.getDeviceInstance(req.params.device);
 
