@@ -42,6 +42,7 @@ export class SmartDevice<D> extends EventEmitter {
     dweetUrl: string;
     updateInterval: Timeout;
     pingInterval: Timeout;
+    asynchronousServices: boolean;
     constructor(uid: string, smartHub: SmartHub, config: DeviceConfig<D>);
     load(): void;
     sendMessage(data: object): void;

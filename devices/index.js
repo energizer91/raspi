@@ -5,6 +5,7 @@ const smartRGB = require('./smartRGB');
 const smartAlarm = require('./smartAlarm');
 const smartHumidifier = require('./smartHumidifier');
 const smartMeteoStation = require('./smartMeteoStation');
+const smartThermostat = require('./smartThermostat');
 
 module.exports = {
   smartBulb,
@@ -14,4 +15,5 @@ module.exports = {
   smartAlarm,
   smartHumidifier,
   smartMeteoStation,
+  smartThermostat,
 };

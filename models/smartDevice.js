@@ -28,6 +28,7 @@ class SmartDevice extends EventEmitter {
     this.registered = false; // chack if device is loaded
     this.connected = false; // check if device is connected
     this.accessory = null; // HomeKit accessory
+    this.asynchronousServices = false; // If true, services can be added dynamically during work. If false, services are predefined during boot
     this.services = []; // list of HomeKit services
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
@@ -114,7 +115,7 @@ class SmartDevice extends EventEmitter {
     });
     this.connection.on('message', message => this.processMessage(message));
 
-    this.sendData(this.data);
+    // this.sendData(this.data);
     this.emit('connected');
 
     this.enableUpdates();
@@ -199,6 +200,7 @@ class SmartDevice extends EventEmitter {
   /** Get available services if we have homebridge */
   getServices() {
     // this.log('I\'m trying to get services');
+    return [];
   }
 
   // load methods
@@ -400,6 +402,14 @@ class SmartDevice extends EventEmitter {
       .setCharacteristic(this.homebridge.hap.Characteristic.Model, this.name)
       .setCharacteristic(this.homebridge.hap.Characteristic.SerialNumber, this.sno);
 
+    if (!this.asynchronousServices) {
+      this.attachServices();
+    }
+
+    return this.accessory;
+  }
+
+  attachServices() {
     this.services.forEach(service => {
       const ServiceConstructor = service.type;
 
@@ -409,8 +419,6 @@ class SmartDevice extends EventEmitter {
 
       this.attachSensorData(service);
     });
-
-    return this.accessory;
   }
 
   /** attach HomeKit characteristics to accessory */
