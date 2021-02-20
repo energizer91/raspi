@@ -14,7 +14,7 @@ class API {
     }
 
     const uid = this.generateUid();
-    const newDevice = new database.Device({ uid, pid, vid, sno, model, data });
+    const newDevice = new database.Device({ uid, pid, vid, sno, model, data, active: true });
 
     await newDevice.save();
 
