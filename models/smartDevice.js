@@ -33,6 +33,9 @@ class SmartDevice extends EventEmitter {
     this.services = []; // list of HomeKit services
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
+    this.needSetData = false;
+
+    setInterval(() => this.checkSetData(), 1000);
   }
 
   load() {
@@ -124,6 +127,25 @@ class SmartDevice extends EventEmitter {
     this.deviceDidConnect(this.connection);
   }
 
+  /**
+   * Checks every second to send data in bulk so less load for network
+   */
+  checkSetData() {
+    if (!this.connection) {
+      return;
+    }
+
+    if (!this.needSetData) {
+      return;
+    }
+
+    this.log("Sending data in bulk");
+
+    this.sendData(this.data);
+
+    this.needSetData = false;
+  }
+
   /** set data for device and send it to device directly */
   setData(data, skipUpdate = false) {
     this.deviceWillSetData(data);
@@ -137,7 +159,8 @@ class SmartDevice extends EventEmitter {
     }
 
     if (!skipUpdate) {
-      this.sendData(data);
+      // this.sendData(data);
+      this.needSetData = true;
     }
 
     this.deviceDidSetData(prevData);
@@ -416,7 +439,9 @@ class SmartDevice extends EventEmitter {
 
       const sensor = new ServiceConstructor(service.name);
 
-      this.accessory.addService(sensor);
+      if (!this.accessory.getService(service.name)) {
+        this.accessory.addService(sensor);
+      }
 
       this.attachSensorData(service);
     });
