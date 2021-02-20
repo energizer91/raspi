@@ -495,19 +495,17 @@ class SmartDevice extends EventEmitter {
       if (characteristic.get) {
         this.accessory.getService(service.name)
           .getCharacteristic(characteristic.type)
-          .on('get', callback => this.getData()
-            .then(data => {
-              const value = characteristic.get(data);
+          .on('get', callback => {
+            const value = characteristic.get(this.data);
 
-              this.log('Get', service.name, value);
+            this.log('Get', service.name, value);
 
-              if (characteristic.metric && characteristic.metric.instance) {
-                characteristic.metric.instance.set(value);
-              }
+            if (characteristic.metric && characteristic.metric.instance) {
+              characteristic.metric.instance.set(value);
+            }
 
-              callback(null, value);
-            })
-            .catch(callback));
+            callback(null, value);
+          });
       }
 
       if (characteristic.set) {
