@@ -7,6 +7,7 @@ const uuidv1 = require('uuid/v1');
 const messageQueue = require('../helpers/messageQueue');
 const EventEmitter = require('events');
 const axios = require('axios');
+const deepMerge = require('deepmerge');
 
 /**
  * Smart device base class
@@ -130,7 +131,7 @@ class SmartDevice extends EventEmitter {
     const prevData = this.data;
 
     if (typeof data === 'object') {
-      this.data = Object.assign({}, this.data, data);
+      this.data = deepMerge(this.data, data);
     } else {
       this.data = data;
     }

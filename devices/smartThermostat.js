@@ -26,7 +26,10 @@ class SmartThermostat extends SmartDevice {
         },
         {
           type: this.homebridge.hap.Characteristic.TargetTemperature,
-          get: data => data[mac].target
+          get: data => data[mac].target,
+          set: value => ({
+            [mac]: { target: value }
+          })
         },
         {
           type: this.homebridge.hap.Characteristic.CurrentHeatingCoolingState,
