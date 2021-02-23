@@ -10,6 +10,16 @@ const axios = require('axios');
 const deepMerge = require('deepmerge');
 const client = require('prom-client');
 
+const baseMetrics = {
+  free: {type: client.Gauge, name: 'espruino_free', help: 'Memory that is available to be used (in blocks)', labelNames: ["model", "sno"]},
+  usage: {type: client.Gauge, name: 'espruino_usage', help: 'Memory that has been used (in blocks)', labelNames: ["model", "sno"]},
+  total: {type: client.Gauge, name: 'espruino_total', help: 'Total memory (in blocks)', labelNames: ["model", "sno"]},
+  history: {type: client.Gauge, name: 'espruino_history', help: 'Memory used for command history', labelNames: ["model", "sno"]},
+  gc: {type: client.Gauge, name: 'espruino_gc', help: 'Memory freed during the GC pass', labelNames: ["model", "sno"]},
+  gctime: {type: client.Gauge, name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)', labelNames: ["model", "sno"]},
+  blocksize: {type: client.Gauge, name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes', labelNames: ["model", "sno"]},
+};
+
 /**
  * Smart device base class
  * @class
@@ -35,7 +45,7 @@ class SmartDevice extends EventEmitter {
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
     this.needSetData = false;
-    this.metrics = null;
+    this.metrics = {};
 
     setInterval(() => this.checkSetData(), 1000);
   }
@@ -70,19 +80,16 @@ class SmartDevice extends EventEmitter {
   }
 
   setMetrics() {
-    this.metrics = {
-      free: new client.Gauge({name: 'espruino_free', help: 'Memory that is available to be used (in blocks)', labelNames: ["model", "sno"]}),
-      usage: new client.Gauge({name: 'espruino_usage', help: 'Memory that has been used (in blocks)', labelNames: ["model", "sno"]}),
-      total: new client.Gauge({name: 'espruino_total', help: 'Total memory (in blocks)', labelNames: ["model", "sno"]}),
-      history: new client.Gauge({name: 'espruino_history', help: 'Memory used for command history', labelNames: ["model", "sno"]}),
-      gc: new client.Gauge({name: 'espruino_gc', help: 'Memory freed during the GC pass', labelNames: ["model", "sno"]}),
-      gctime: new client.Gauge({name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)', labelNames: ["model", "sno"]}),
-      blocksize: new client.Gauge({name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes', labelNames: ["model", "sno"]}),
-    }
+    Object.keys(baseMetrics).forEach(metric => {
+      const existingMetric = this.register.getSingleMetric(baseMetrics[metric].name);
+      if (existingMetric) {
+        this.metrics[metric] = existingMetric;
+      } else {
+        const {type: MetricType, ...rest} = baseMetrics[metric];
 
-    Object.values(this.metrics).forEach(metric => {
-      if (!this.register.getSingleMetric(metric.name)) {
-        this.register.registerMetric(metric);
+        this.metrics[metric] = new MetricType(rest);
+
+        this.register.registerMetric(this.metrics[metric]);
       }
     });
   }
@@ -535,12 +542,15 @@ class SmartDevice extends EventEmitter {
       if (characteristic.metric && characteristic.metric.type) {
         const {type: MetricType, ...rest} = characteristic.metric;
 
-        characteristic.metric.instance = new MetricType({
-          ...rest,
-          labelNames: ["model", "sno"]
-        });
+        const existingMetric = this.register.getSingleMetric(rest.name)
 
-        if (!this.register.getSingleMetric(rest.name)) {
+        if (existingMetric) {
+          characteristic.metric.instance = existingMetric;
+        } else {
+          characteristic.metric.instance = new MetricType({
+            ...rest,
+            labelNames: ["model", "sno"]
+          });
           this.register.registerMetric(characteristic.metric.instance);
         }
       }
