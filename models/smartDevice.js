@@ -71,13 +71,13 @@ class SmartDevice extends EventEmitter {
 
   setMetrics() {
     this.metrics = {
-      free: new client.Gauge({name: 'free', help: 'Memory that is available to be used (in blocks)', labelNames: ["model", "sno"]}),
-      usage: new client.Gauge({name: 'usage', help: 'Memory that has been used (in blocks)', labelNames: ["model", "sno"]}),
-      total: new client.Gauge({name: 'total', help: 'Total memory (in blocks)', labelNames: ["model", "sno"]}),
-      history: new client.Gauge({name: 'history', help: 'Memory used for command history', labelNames: ["model", "sno"]}),
-      gc: new client.Gauge({name: 'gc', help: 'Memory freed during the GC pass', labelNames: ["model", "sno"]}),
-      gctime: new client.Gauge({name: 'gctime', help: 'Time taken for GC pass (in milliseconds)', labelNames: ["model", "sno"]}),
-      blocksize: new client.Gauge({name: 'blocksize', help: 'Size of a block (variable) in bytes', labelNames: ["model", "sno"]}),
+      free: new client.Gauge({name: 'espruino_free', help: 'Memory that is available to be used (in blocks)', labelNames: ["model", "sno"]}),
+      usage: new client.Gauge({name: 'espruino_usage', help: 'Memory that has been used (in blocks)', labelNames: ["model", "sno"]}),
+      total: new client.Gauge({name: 'espruino_total', help: 'Total memory (in blocks)', labelNames: ["model", "sno"]}),
+      history: new client.Gauge({name: 'espruino_history', help: 'Memory used for command history', labelNames: ["model", "sno"]}),
+      gc: new client.Gauge({name: 'espruino_gc', help: 'Memory freed during the GC pass', labelNames: ["model", "sno"]}),
+      gctime: new client.Gauge({name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)', labelNames: ["model", "sno"]}),
+      blocksize: new client.Gauge({name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes', labelNames: ["model", "sno"]}),
     }
 
     Object.values(this.metrics).forEach(metric => {
