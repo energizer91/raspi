@@ -11,13 +11,13 @@ const deepMerge = require('deepmerge');
 const client = require('prom-client');
 
 const baseMetrics = {
-  free: {type: client.Gauge, name: 'espruino_free', help: 'Memory that is available to be used (in blocks)', labelNames: ["model", "sno"]},
-  usage: {type: client.Gauge, name: 'espruino_usage', help: 'Memory that has been used (in blocks)', labelNames: ["model", "sno"]},
-  total: {type: client.Gauge, name: 'espruino_total', help: 'Total memory (in blocks)', labelNames: ["model", "sno"]},
-  history: {type: client.Gauge, name: 'espruino_history', help: 'Memory used for command history', labelNames: ["model", "sno"]},
-  gc: {type: client.Gauge, name: 'espruino_gc', help: 'Memory freed during the GC pass', labelNames: ["model", "sno"]},
-  gctime: {type: client.Gauge, name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)', labelNames: ["model", "sno"]},
-  blocksize: {type: client.Gauge, name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes', labelNames: ["model", "sno"]},
+  free: {type: client.Gauge, name: 'espruino_free', help: 'Memory that is available to be used (in blocks)'},
+  usage: {type: client.Gauge, name: 'espruino_usage', help: 'Memory that has been used (in blocks)'},
+  total: {type: client.Gauge, name: 'espruino_total', help: 'Total memory (in blocks)'},
+  history: {type: client.Gauge, name: 'espruino_history', help: 'Memory used for command history'},
+  gc: {type: client.Gauge, name: 'espruino_gc', help: 'Memory freed during the GC pass'},
+  gctime: {type: client.Gauge, name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)'},
+  blocksize: {type: client.Gauge, name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes'},
 };
 
 /**
@@ -87,7 +87,10 @@ class SmartDevice extends EventEmitter {
       } else {
         const {type: MetricType, ...rest} = baseMetrics[metric];
 
-        this.metrics[metric] = new MetricType(rest);
+        this.metrics[metric] = new MetricType({
+          ...rest,
+          labelNames: ["model", "sno"]
+        });
 
         this.register.registerMetric(this.metrics[metric]);
       }
@@ -561,7 +564,7 @@ class SmartDevice extends EventEmitter {
           .on('get', callback => {
             const value = characteristic.get(this.data);
 
-            this.log('Get', service.name, value);
+            this.log('Get', service.name, this.model, this.sno, value);
 
             if (characteristic.metric && characteristic.metric.instance) {
               characteristic.metric.instance.set({model: this.model, sno: this.sno}, value);
