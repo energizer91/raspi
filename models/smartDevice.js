@@ -614,7 +614,7 @@ class SmartDevice extends EventEmitter {
 
             if (characteristic.metric && characteristic.metric.instance) {
               this.log('Setting metric', value);
-              characteristic.metric.instance.set(value);
+              characteristic.metric.instance.set({model: this.model, sno: this.sno}, value);
             }
 
             this.accessory.getService(service.name)
