@@ -71,13 +71,13 @@ class SmartDevice extends EventEmitter {
 
   setMetrics() {
     this.metrics = {
-      free: new client.Gauge({name: this.model + '_' + this.sno + '_free', help: 'Memory that is available to be used (in blocks)'}),
-      usage: new client.Gauge({name: this.model + '_' + this.sno + '_usage', help: 'Memory that has been used (in blocks)'}),
-      total: new client.Gauge({name: this.model + '_' + this.sno + '_total', help: 'Total memory (in blocks)'}),
-      history: new client.Gauge({name: this.model + '_' + this.sno + '_history', help: 'Memory used for command history'}),
-      gc: new client.Gauge({name: this.model + '_' + this.sno + '_gc', help: 'Memory freed during the GC pass'}),
-      gctime: new client.Gauge({name: this.model + '_' + this.sno + '_gctime', help: 'Time taken for GC pass (in milliseconds)'}),
-      blocksize: new client.Gauge({name: this.model + '_' + this.sno + '_blocksize', help: 'Size of a block (variable) in bytes'}),
+      free: new client.Gauge({name: this.model + '_' + this.sno + '_free', help: 'Memory that is available to be used (in blocks)', labelNames: ["name", "sno"]}),
+      usage: new client.Gauge({name: this.model + '_' + this.sno + '_usage', help: 'Memory that has been used (in blocks)', labelNames: ["name", "sno"]}),
+      total: new client.Gauge({name: this.model + '_' + this.sno + '_total', help: 'Total memory (in blocks)', labelNames: ["name", "sno"]}),
+      history: new client.Gauge({name: this.model + '_' + this.sno + '_history', help: 'Memory used for command history', labelNames: ["name", "sno"]}),
+      gc: new client.Gauge({name: this.model + '_' + this.sno + '_gc', help: 'Memory freed during the GC pass', labelNames: ["name", "sno"]}),
+      gctime: new client.Gauge({name: this.model + '_' + this.sno + '_gctime', help: 'Time taken for GC pass (in milliseconds)', labelNames: ["name", "sno"]}),
+      blocksize: new client.Gauge({name: this.model + '_' + this.sno + '_blocksize', help: 'Size of a block (variable) in bytes', labelNames: ["name", "sno"]}),
     }
 
     Object.values(this.metrics).forEach(metric => this.register.registerMetric(metric));
@@ -361,7 +361,7 @@ class SmartDevice extends EventEmitter {
 
     Object.keys(metrics).forEach(metric => {
       if (this.metrics[metric]) {
-        this.metrics[metric].set(metrics[metric]);
+        this.metrics[metric].set({name: this.name, sno: this.sno}, metrics[metric]);
       }
     });
   }
@@ -531,7 +531,10 @@ class SmartDevice extends EventEmitter {
       if (characteristic.metric && characteristic.metric.type) {
         const {type: MetricType, ...rest} = characteristic.metric;
 
-        characteristic.metric.instance = new MetricType(rest);
+        characteristic.metric.instance = new MetricType({
+          ...rest,
+          labelNames: ["name", "sno"]
+        });
 
         this.register.registerMetric(characteristic.metric.instance);
       }
@@ -545,7 +548,7 @@ class SmartDevice extends EventEmitter {
             this.log('Get', service.name, value);
 
             if (characteristic.metric && characteristic.metric.instance) {
-              characteristic.metric.instance.set(value);
+              characteristic.metric.instance.set({name: this.name, sno: this.sno}, value);
             }
 
             callback(null, value);
