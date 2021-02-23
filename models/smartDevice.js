@@ -81,9 +81,12 @@ class SmartDevice extends EventEmitter {
     }
 
     Object.values(this.metrics).forEach(metric => {
-      if (!this.register.getSingleMetric(metric.name)) {
-        this.register.registerMetric(metric);
-      }
+      this.register.getSingleMetric(metric.name)
+        .then(m => {
+          if (!m) {
+            this.register.registerMetric(metric);
+          }
+        })
     });
   }
 
@@ -540,9 +543,12 @@ class SmartDevice extends EventEmitter {
           labelNames: ["model", "sno"]
         });
 
-        if (!this.register.getSingleMetric(rest.name)) {
-          this.register.registerMetric(characteristic.metric.instance);
-        }
+        this.register.getSingleMetric(rest.name)
+          .then(metric => {
+            if (!metric) {
+              this.register.registerMetric(characteristic.metric.instance);
+            }
+          })
       }
 
       if (characteristic.get) {
