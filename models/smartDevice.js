@@ -8,6 +8,7 @@ const messageQueue = require('../helpers/messageQueue');
 const EventEmitter = require('events');
 const axios = require('axios');
 const deepMerge = require('deepmerge');
+const client = require('prom-client');
 
 /**
  * Smart device base class
@@ -34,6 +35,7 @@ class SmartDevice extends EventEmitter {
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
     this.needSetData = false;
+    this.metrics = null;
 
     setInterval(() => this.checkSetData(), 1000);
   }
@@ -43,6 +45,10 @@ class SmartDevice extends EventEmitter {
 
     if (this.homebridge) {
       this.services = this.getServices();
+    }
+
+    if (this.register) {
+      this.setMetrics();
     }
 
     this.registered = true;
@@ -61,6 +67,20 @@ class SmartDevice extends EventEmitter {
 
   error(...args) {
     return this.logger.error(this.uid, this.name, '->', ...args);
+  }
+
+  setMetrics() {
+    this.metrics = {
+      free: new client.Gauge({name: this.model + '_' + this.sno + '_free', help: 'Memory that is available to be used (in blocks)'}),
+      usage: new client.Gauge({name: this.model + '_' + this.sno + '_usage', help: 'Memory that has been used (in blocks)'}),
+      total: new client.Gauge({name: this.model + '_' + this.sno + '_total', help: 'Total memory (in blocks)'}),
+      history: new client.Gauge({name: this.model + '_' + this.sno + '_history', help: 'Memory used for command history'}),
+      gc: new client.Gauge({name: this.model + '_' + this.sno + '_gc', help: 'Memory freed during the GC pass'}),
+      gctime: new client.Gauge({name: this.model + '_' + this.sno + '_gctime', help: 'Time taken for GC pass (in milliseconds)'}),
+      blocksize: new client.Gauge({name: this.model + '_' + this.sno + '_blocksize', help: 'Size of a block (variable) in bytes'}),
+    }
+
+    Object.values(this.metrics).forEach(metric => this.register.registerMetric(metric));
   }
 
   sendMessage(data) {
@@ -292,9 +312,13 @@ class SmartDevice extends EventEmitter {
 
     return this.sendMessageWithResponse({ type: 'get' })
       .then(message => {
-        const { data } = message;
+        const { data, metrics } = message;
 
         this.setData(data, true);
+
+        if (metrics) {
+          this.onGetMetrics(metrics);
+        }
 
         return data;
       })
@@ -320,6 +344,26 @@ class SmartDevice extends EventEmitter {
   /** get some specific information (called signals) from device */
   onGetSignal(signal) {
     // this.log('I just got signal', signal);
+  }
+
+  onGetMetrics(metrics) {
+    if (!this.register) {
+      return;
+    }
+
+    if (!metrics) {
+      return;
+    }
+
+    if (!this.metrics) {
+      return;
+    }
+
+    Object.keys(metrics).forEach(metric => {
+      if (this.metrics[metric]) {
+        this.metrics[metric].set(metrics[metric]);
+      }
+    });
   }
 
   onGetAPIRequest(request = { uuid: '', command: '', payload: {} }) {
