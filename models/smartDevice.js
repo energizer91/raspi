@@ -18,6 +18,7 @@ const baseMetrics = {
   gc: {type: client.Gauge, name: 'espruino_gc', help: 'Memory freed during the GC pass'},
   gctime: {type: client.Gauge, name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)'},
   blocksize: {type: client.Gauge, name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes'},
+  connected: {type: client.Gauge, name: 'raspi_connected', help: 'Device connection status'},
 };
 
 /**
@@ -158,6 +159,8 @@ class SmartDevice extends EventEmitter {
 
     this.enableUpdates();
 
+    this.metrics.connected.set({model: this.model, sno: this.sno}, 1);
+
     this.deviceDidConnect(this.connection);
   }
 
@@ -243,6 +246,8 @@ class SmartDevice extends EventEmitter {
     this.connected = false;
 
     this.emit('disconnected');
+
+    this.metrics.connected.set({model: this.model, sno: this.sno}, 0);
 
     this.deviceDidDisconnect();
   }

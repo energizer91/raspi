@@ -1,4 +1,5 @@
 const SmartDevice = require('../models/smartDevice');
+// const client = require('prom-client');
 
 class SmartThermostat extends SmartDevice {
   constructor(uid, smartHub, config) {
@@ -18,6 +19,11 @@ class SmartThermostat extends SmartDevice {
       characteristics: [
         {
           type: this.homebridge.hap.Characteristic.CurrentTemperature,
+          // metric: {
+          //   type: client.Gauge,
+          //   name: 'temperature',
+          //   help: 'Current temperature'
+          // },
           get: data => data[mac].current,
           props: {
             minValue: 6,
