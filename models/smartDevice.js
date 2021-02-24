@@ -46,6 +46,7 @@ class SmartDevice extends EventEmitter {
     this.data = null; // all device returning data
     this.dweetUrl = `https://dweet.io:443/dweet/for/${this.uid}`; // link for posting dweets
     this.needSetData = false;
+    this.initialDataSet = false;
     this.metrics = {};
 
     setInterval(() => this.checkSetData(), 1000);
@@ -154,7 +155,13 @@ class SmartDevice extends EventEmitter {
     });
     this.connection.on('message', message => this.processMessage(message));
 
-    // this.sendData(this.data);
+    if (!this.initialDataSet) {
+      this.initialDataSet = true;
+      this.getData();
+    } else {
+      this.sendData(this.data);
+    }
+
     this.emit('connected');
 
     this.enableUpdates();
