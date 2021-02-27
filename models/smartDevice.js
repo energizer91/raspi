@@ -19,6 +19,7 @@ const baseMetrics = {
   gctime: {type: client.Gauge, name: 'espruino_gctime', help: 'Time taken for GC pass (in milliseconds)'},
   blocksize: {type: client.Gauge, name: 'espruino_blocksize', help: 'Size of a block (variable) in bytes'},
   connected: {type: client.Gauge, name: 'raspi_connected', help: 'Device connection status'},
+  restarts: {type: client.Counter, name: 'raspi_restarts', help: 'Device restarts'},
 };
 
 /**
@@ -160,6 +161,7 @@ class SmartDevice extends EventEmitter {
       this.getData();
     } else {
       this.sendData(this.data);
+      this.metrics.restarts.inc({model: this.model, sno: this.sno});
     }
 
     this.emit('connected');
