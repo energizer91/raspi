@@ -49,6 +49,7 @@ class SmartDevice extends EventEmitter {
     this.needSetData = false;
     this.initialDataSet = false;
     this.metrics = {};
+    this.customDataMetrics = {};
 
     setInterval(() => this.checkSetData(), 1000);
   }
@@ -85,6 +86,7 @@ class SmartDevice extends EventEmitter {
   setMetrics() {
     Object.keys(baseMetrics).forEach(metric => {
       const existingMetric = this.register.getSingleMetric(baseMetrics[metric].name);
+
       if (existingMetric) {
         this.metrics[metric] = existingMetric;
       } else {
@@ -98,6 +100,25 @@ class SmartDevice extends EventEmitter {
         this.register.registerMetric(this.metrics[metric]);
       }
     });
+
+    const customMetrics = this.getCustomMetrics();
+
+    customMetrics.forEach(metric => {
+      const existingMetric = this.register.getSingleMetric(metric.name);
+
+      if (existingMetric) {
+        this.customDataMetrics[metric.name] = existingMetric;
+      } else {
+        const {type: MetricType, ...rest} = metric;
+
+        this.customDataMetrics[metric.name] = new MetricType({
+          ...rest,
+          labelNames: ["model", "sno"]
+        });
+
+        this.register.registerMetric(this.customDataMetrics[metric.name]);
+      }
+    })
   }
 
   sendMessage(data) {
@@ -275,6 +296,11 @@ class SmartDevice extends EventEmitter {
     return [];
   }
 
+  /** Get custom metrics, which device can share but which don't exist in homekit */
+  getCustomMetrics() {
+    return [];
+  }
+
   // load methods
   deviceWillLoad() {
     // this.log('I will load soon');
@@ -344,8 +370,9 @@ class SmartDevice extends EventEmitter {
 
         this.setData(data, true);
 
-        if (metrics) {
+        if (this.register) {
           this.onGetMetrics(metrics);
+          this.onGetCustomDataMetrics(data);
         }
 
         return data;
@@ -375,10 +402,6 @@ class SmartDevice extends EventEmitter {
   }
 
   onGetMetrics(metrics) {
-    if (!this.register) {
-      return;
-    }
-
     if (!metrics) {
       return;
     }
@@ -390,6 +413,22 @@ class SmartDevice extends EventEmitter {
     Object.keys(metrics).forEach(metric => {
       if (this.metrics[metric]) {
         this.metrics[metric].set({model: this.model, sno: this.sno}, metrics[metric]);
+      }
+    });
+  }
+
+  onGetCustomDataMetrics(data) {
+    if (!data) {
+      return;
+    }
+
+    if (!this.customDataMetrics) {
+      return;
+    }
+
+    Object.keys(data).forEach(metric => {
+      if (this.customDataMetrics[metric]) {
+        this.customDataMetrics[metric].set({model: this.model, sno: this.sno}, data[metric]);
       }
     });
   }

@@ -9,8 +9,19 @@ class SmartThermometer extends SmartDevice {
     this.name = 'Smart thermometer';
     this.data = Object.assign({
       temperature: 0,
-      humidity: 0
+      humidity: 0,
+      heatIndex: 0
     }, config.data);
+  }
+
+  getCustomMetrics() {
+    return [
+      {
+        type: client.Gauge,
+        name: 'heatIndex',
+        help: 'Current Heat Index'
+      }
+    ]
   }
 
   getServices() {
