@@ -201,4 +201,4 @@ class smartZigbeeThermometer extends SmartDevice {
   }
 }
 
-module.exports = ZigbeeDevice;
+module.exports = smartZigbeeThermometer;
