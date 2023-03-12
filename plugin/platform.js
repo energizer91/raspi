@@ -2,6 +2,8 @@ const SmartHub = require('../models/smartHub');
 const app = require('../bin/www');
 const hubRouter = require('../routes/hub');
 const client = require('prom-client');
+const mqtt = require('mqtt');
+const globalConfig = require('config');
 
 module.exports = function(homebridge) {
   // Platform constructor
@@ -12,6 +14,7 @@ module.exports = function(homebridge) {
       log('SmartHub platform Init');
 
       const register = new client.Registry();
+      const mqttClient = mqtt.connect(globalConfig.get('mqtt.url'), globalConfig.get('mqtt.options'));
 
       // Add a default label which is added to all metrics
       register.setDefaultLabels({app: "raspi"});
@@ -21,11 +24,12 @@ module.exports = function(homebridge) {
 
       this.log = log;
       this.config = config;
-      this.hub = new SmartHub(homebridge, register, log); // link homebridge to smarthub
+      this.hub = new SmartHub(homebridge, register, mqttClient, log); // link homebridge to smarthub
 
       const hubMiddleware = (req, res, next) => {
         req.smartHub = this.hub;
         req.register = register;
+        req.mqtt = mqttClient;
         req.log = this.log;
 
         return next();
@@ -45,6 +49,11 @@ module.exports = function(homebridge) {
 
     addDevice(device) {
       this.log('Adding device ' + device.name);
+
+      if (!device.homekit) {
+        // no need to register device in homekit
+        return;
+      }
 
       const accessory = device.createAccessory();
 
@@ -74,6 +83,11 @@ module.exports = function(homebridge) {
       this.hub.getDevice(accessory.UUID)
         .then(device => {
           if (!device) {
+            return;
+          }
+
+          if (!device.homekit) {
+            // no need to send reachability to homekit
             return;
           }
 
@@ -121,8 +135,8 @@ module.exports = function(homebridge) {
     }
   }
 
-  SmartHubPlatform.package = "homebridge-mysmarthub"; // package name for homebridge
-  SmartHubPlatform.friendlyName = 'energizer91\'s Smart hub'; // friendly name of hub
+  SmartHubPlatform.package = globalConfig.get('plugin.package'); // package name for homebridge
+  SmartHubPlatform.friendlyName = globalConfig.get('plugin.friendlyName'); // friendly name of hub
 
   return SmartHubPlatform;
 };

@@ -25,8 +25,8 @@ class API {
     return database.Device.findOne({where: { uid }});
   }
 
-  async getDeviceByVendorData(vid, pid, sno) {
-    const device = await database.Device.findOne({where: { vid, pid, sno }});
+  async getDeviceByVendorData(sno) {
+    const device = await database.Device.findOne({where: { sno }});
 
     if (!device) {
       return null;
@@ -44,7 +44,7 @@ class API {
   }
 
   async unregisterDevice(uid) {
-    await database.Device.remove({where: { uid }});
+    return database.Device.remove({where: { uid }});
   }
 }
 

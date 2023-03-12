@@ -1,17 +1,19 @@
 const Sequelize = require('sequelize');
 const path = require("path");
+const config = require('config');
 
-const sequelize = new Sequelize('raspi', 'user', '', {
-  dialect: 'sqlite',
-  operatorAliases: false,
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  },
-  storage: path.join(__dirname, '..', 'raspi.sqlite')
-});
+const connectionConfig = config.get('database.connection');
+
+if (connectionConfig.storage) {
+  connectionConfig.storage = path.join(__dirname, '..', connectionConfig.storage);
+}
+
+const sequelize = new Sequelize(
+  config.get('database.name'),
+  config.get('database.username'),
+  config.get('database.password'),
+  connectionConfig
+);
 
 const Device = sequelize.define('device', {
   uid: {type: Sequelize.UUID},

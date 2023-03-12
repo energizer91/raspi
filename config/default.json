@@ -1,7 +1,6 @@
 {
   "connection": {
-    "port": 8080,
-    "timeout": 10000
+    "port": 8080
   },
   "smarthub": {
     "name": "raspi",
@@ -26,5 +25,9 @@
       },
       "storage": "raspi.sqlite"
     }
+  },
+  "mqtt": {
+    "url": "mqtt://localhost",
+    "prefix": "zigbee2mqtt"
   }
 }

@@ -1,6 +1,8 @@
 import HAPNodeJS from "./hap-nodejs";
 import {EventEmitter} from "events";
-import {SmartDevice} from "./smartDevice";
+import SmartDevice from "./smartDevice";
+import {Registry} from "prom-client";
+import {MqttClient} from "mqtt";
 
 export type DBDevice = any;
 
@@ -10,7 +12,7 @@ export interface HomeBridge {
 }
 
 export class SmartHub extends EventEmitter {
-    constructor(homebridge: HomeBridge);
+    constructor(homebridge: HomeBridge, platformRegistry: Registry, mqttClient: MqttClient, log: Console);
     on(event: 'newDevice', listener: (device: SmartDevice<any>) => void): this;
     on(event: 'removeDevice', listener: (device: SmartDevice<any>) => void): this;
     registerDevice(dbDevice: DBDevice): void;

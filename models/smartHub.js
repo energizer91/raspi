@@ -2,33 +2,68 @@ const API = require('./api');
 const WebSocket = require('ws');
 const deviceModels = require('../devices');
 const EventEmitter = require('events');
+const config = require('config');
 
 function heartbeat() {
   this.isAlive = true;
 }
 
-function noop() {}
+function noop() {
+}
 
 class SmartHub extends EventEmitter {
-  constructor(homebridge, prometheusRegister, log) {
+  constructor(homebridge, prometheusRegister, mqttClient, log) {
     super();
 
     this.api = new API();
     this.devices = new Map();
-    this.manufacturer = "energizer91";
+    this.zigbeeDevices = new Map(); // deviceId -> uid, which means this device is registered (in order to do less work while getting every possible message)
+    this.manufacturer = config.get('smarthub.manufacturer');
     this.homebridge = homebridge;
     this.prometheusRegister = prometheusRegister;
+    this.mqttClient = mqttClient;
     this.log = log;
 
-    this.wss = new WebSocket.Server({port: 8080});
+    this.wss = new WebSocket.Server(config.get('connection'));
+
+    this.mqttClient.on('connect', () => {
+      this.mqttClient.subscribe(config.get('mqtt.prefix') + '/+', (err, granted) => {
+        const topicArray = granted.topic.split('/');
+
+        if (!topicArray[0] !== config.get('mqtt.prefix')) {
+          // not zigbee2mqtt topic, don't listen to it
+          return;
+        }
+
+        const sno = topicArray[1];
+
+        if (!sno) {
+          // unknown topic
+          return;
+        }
+
+        if (!this.zigbeeDevices.get(sno)) {
+          // we don't care about this device
+        }
+
+        this.connectMqttDevice(granted.topic, {sno}).catch(error => {
+            this.log.error('Error connecting device', error);
+          }
+        );
+      });
+    });
 
     this.wss.on('connection', (ws, req) => {
-      const {pid, vid, sno} = req.headers;
+      const {sno} = req.headers;
 
       ws.on('pong', heartbeat);
 
-      this.connectDevice(ws, {pid, vid, sno})
-        .catch(error => this.log.error('Error connecting device', error));
+      this.connectDevice(ws, {sno})
+        .catch(error => {
+            this.log.error('Error connecting device', error);
+            ws.close();
+          }
+        );
     })
 
     this.pingInterval = setInterval(() => {
@@ -49,9 +84,19 @@ class SmartHub extends EventEmitter {
     });
   }
 
+  getAllRegisteredDevices() {
+    this.api.getAllDevices()
+      .then(devices => {
+        devices.forEach(device => {
+          // initial adding all possible zigbee devices to database
+          this.zigbeeDevices.set(device.sno, device.uid);
+        })
+      })
+  }
+
   registerDevice(dbDevice) {
     if (!dbDevice.active) {
-      return;
+      return null;
     }
 
     if (!deviceModels[dbDevice.model]) {
@@ -67,6 +112,7 @@ class SmartHub extends EventEmitter {
       homebridge: this.homebridge,
       manufacturer: this.manufacturer,
       register: this.prometheusRegister,
+      mqttClient: this.mqttClient,
       log: this.log,
     }, dbDevice);
 
@@ -109,11 +155,34 @@ class SmartHub extends EventEmitter {
     return this.registerDevice(device);
   }
 
-  async connectDevice(connection, {vid, pid, sno}) {
-    const device = await this.api.getDeviceByVendorData(vid, pid, sno);
+  async connectMqttDevice(topic, {sno}) {
+    if (topic) {
+      throw new Error('No topic specified');
+    }
+
+    const device = await this.api.getDeviceByVendorData(sno);
 
     if (!device) {
-      connection.close();
+      throw new Error('No device found');
+    }
+
+    const instance = await this.getDevice(device.uid);
+
+    if (instance) {
+      if (!instance.connected) {
+        instance.disconnect('connected');
+      }
+
+      instance.connect(topic);
+
+      this.zigbeeDevices.set(sno, device.uid);
+    }
+  }
+
+  async connectDevice(connection, {sno}) {
+    const device = await this.api.getDeviceByVendorData(sno);
+
+    if (!device) {
       throw new Error('No device found');
     }
 

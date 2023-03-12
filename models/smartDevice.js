@@ -35,11 +35,13 @@ class SmartDevice extends EventEmitter {
     this.smartHub = smartHub; // device low level api
     this.homebridge = smartHub.homebridge; // homebridge instance
     this.register = smartHub.register;
+    this.mqttClient = smartHub.mqttClient;
     this.logger = smartHub.log;
+    this.homekit = true;
     this.model = 'smartDevice'; // device model for HomeKit
     this.name = 'Smart device ' + this.uid; // device display name
     this.connection = null; // device websocket connection
-    this.registered = false; // chack if device is loaded
+    this.registered = false; // check if device is loaded
     this.connected = false; // check if device is connected
     this.accessory = null; // HomeKit accessory
     this.asynchronousServices = false; // If true, services can be added dynamically during work. If false, services are predefined during boot
@@ -159,6 +161,10 @@ class SmartDevice extends EventEmitter {
   }
 
   connect(connection) {
+    if (!connection) {
+      return;
+    }
+
     if (this.connected) {
       this.disconnect("already_opened");
     }
@@ -417,6 +423,7 @@ class SmartDevice extends EventEmitter {
     });
   }
 
+
   onGetCustomDataMetrics(data) {
     if (!data) {
       return;
@@ -526,7 +533,7 @@ class SmartDevice extends EventEmitter {
   /** create HomeKit accessory */
   createAccessory() {
     if (!this.homebridge) {
-      return;
+      return null;
     }
 
     this.accessory = new this.homebridge.platformAccessory(this.model, this.uid);

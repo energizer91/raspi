@@ -27,7 +27,7 @@ interface DeviceConfig<D> {
     config?: object;
 }
 
-export class SmartDevice<D> extends EventEmitter {
+export default class SmartDevice<D> extends EventEmitter {
     uid: string;
     smartHub: SmartHub;
     homebridge: HomeBridge;
