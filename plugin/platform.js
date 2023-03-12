@@ -14,7 +14,7 @@ module.exports = function(homebridge) {
       log('SmartHub platform Init');
 
       const register = new client.Registry();
-      const mqttClient = mqtt.connect(globalConfig.get('mqtt.url'), globalConfig.get('mqtt.options'));
+      const mqttClient = mqtt.connect(globalConfig.get('mqtt.url'));
 
       // Add a default label which is added to all metrics
       register.setDefaultLabels({app: "raspi"});
