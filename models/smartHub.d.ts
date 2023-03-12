@@ -15,7 +15,7 @@ export class SmartHub extends EventEmitter {
     constructor(homebridge: HomeBridge, platformRegistry: Registry, mqttClient: MqttClient, log: Console);
     on(event: 'newDevice', listener: (device: SmartDevice<any>) => void): this;
     on(event: 'removeDevice', listener: (device: SmartDevice<any>) => void): this;
-    registerDevice(dbDevice: DBDevice): void;
+    registerDevice(dbDevice: DBDevice): SmartDevice<any> | null;
     unregisterDevice(uid: string): void;
     getRegisteredDevices(): SmartDevice<any>[];
     getDevice(uid: string): Promise<SmartDevice<any>>;

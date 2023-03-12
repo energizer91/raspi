@@ -26,6 +26,8 @@ class SmartHub extends EventEmitter {
 
     this.wss = new WebSocket.Server(config.get('connection'));
 
+    this.getAllRegisteredDevices();
+
     this.mqttClient.on('connect', () => {
       this.mqttClient.subscribe(config.get('mqtt.prefix') + '/+', (err) => {
         if (err) {
@@ -96,6 +98,7 @@ class SmartHub extends EventEmitter {
         devices.forEach(device => {
           // initial adding all possible zigbee devices to database
           this.zigbeeDevices.set(device.sno, device.uid);
+          this.devices.set(device.uid, device);
         })
       })
   }

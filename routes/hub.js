@@ -74,7 +74,9 @@ router.post('/devices/add', async (req, res, next) => {
 
   const device = await req.smartHub.api.registerDevice(pid, vid, sno, model, data);
 
-  return res.json(req.smartHub.registerDevice(device));
+  req.smartHub.registerDevice(device);
+
+  return res.send('ok');
 })
 
 router.post('/devices/:device/register', (req, res, next) => {
@@ -84,9 +86,9 @@ router.post('/devices/:device/register', (req, res, next) => {
     return next(new Error('Device not found'));
   }
 
-  if (!device.connected) {
-    return next(new Error('Device is not connected'));
-  }
+  // if (!device.connected) {
+  //   return next(new Error('Device is not connected'));
+  // }
 
   req.smartHub.emit('newDevice', device);
 
