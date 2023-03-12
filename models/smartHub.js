@@ -27,15 +27,14 @@ class SmartHub extends EventEmitter {
     this.wss = new WebSocket.Server(config.get('connection'));
 
     this.mqttClient.on('connect', () => {
-      this.mqttClient.subscribe(config.get('mqtt.prefix') + '/+', (err, granted) => {
-        this.log('new subscription', err, granted);
-
+      this.mqttClient.subscribe(config.get('mqtt.prefix') + '/+', (err) => {
         if (err) {
           this.log.error('Subscription error', err);
-          return;
         }
+      });
 
-        const topicArray = granted.topic.split('/');
+      this.mqttClient.on('message', (topic) => {
+        const topicArray = topic.split('/');
 
         if (!topicArray[0] !== config.get('mqtt.prefix')) {
           // not zigbee2mqtt topic, don't listen to it
@@ -53,7 +52,7 @@ class SmartHub extends EventEmitter {
           // we don't care about this device
         }
 
-        this.connectMqttDevice(granted.topic, {sno}).catch(error => {
+        this.connectMqttDevice(topic, {sno}).catch(error => {
             this.log.error('Error connecting device', error);
           }
         );
