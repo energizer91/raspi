@@ -28,6 +28,13 @@ class SmartHub extends EventEmitter {
 
     this.mqttClient.on('connect', () => {
       this.mqttClient.subscribe(config.get('mqtt.prefix') + '/+', (err, granted) => {
+        this.log('new subscription', err, granted);
+
+        if (err) {
+          this.log.error('Subscription error', err);
+          return;
+        }
+
         const topicArray = granted.topic.split('/');
 
         if (!topicArray[0] !== config.get('mqtt.prefix')) {
